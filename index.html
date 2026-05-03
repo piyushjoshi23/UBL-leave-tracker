@@ -266,7 +266,7 @@
           <div class="form-group"><label>Employee ID</label><input type="text" id="f-id" placeholder="EMP-001"/></div>
         </div>
         <div class="form-row">
-          <div class="form-group"><label>WhatsApp Number <span class="req">*</span></label><input type="tel" id="f-phone" placeholder="+91 98765 43210"/></div>
+          <div class="form-group"><label>WhatsApp Number <span class="req">*</span></label><input type="tel" id="f-phone" placeholder="+91 98765 43210" value="+91" /></div>
           <div class="form-group"><label>Department</label>
             <select id="f-dept"><option value="">Select dept.</option><option>Sales</option><option>Operations</option><option>Field Team</option><option>Finance</option><option>HR</option><option>IT</option><option>Marketing</option></select>
           </div>
@@ -629,9 +629,12 @@ function closeModal(){document.getElementById('wa-modal').classList.remove('show
 function sendWA(){
   if(!mLeave)return;
   const leave=mLeave,action=mAction;
-  const phone=leave.phone.replace(/[^0-9]/g,'');
-  const fullPhone=phone.length===10?'91'+phone:phone;
-  const waUrl='https://wa.me/'+fullPhone+'?text='+encodeURIComponent(buildMsg(leave,action));
+  // Strip everything except digits, then ensure 91 prefix
+  let phone=leave.phone.replace(/[^0-9]/g,'');
+  if(phone.startsWith('91')&&phone.length===12) phone=phone;
+  else if(phone.length===10) phone='91'+phone;
+  else if(!phone.startsWith('91')) phone='91'+phone;
+  const waUrl='https://wa.me/'+phone+'?text='+encodeURIComponent(buildMsg(leave,action));
   // Update local + close modal first
   const idx=leaves.findIndex(l=>l.id===leave.id);
   if(idx!==-1)leaves[idx].status=action;
@@ -639,7 +642,7 @@ function sendWA(){
   toast(action==='Approved'?'Approved':'Rejected');
   // Save to sheet in background
   apiCall({action:'updateStatus',id:leave.id,status:action}).catch(()=>{});
-  // Navigate to WhatsApp — works in all browsers including Safari
+  // Open WhatsApp
   setTimeout(()=>{ window.location.href=waUrl; },400);
 }
 
