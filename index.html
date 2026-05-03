@@ -116,7 +116,7 @@
   .pq-right{display:flex;gap:7px;align-items:center;flex-shrink:0;}
   .btn-wa-apr{padding:8px 13px;background:#25d366;color:white;border:none;border-radius:7px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:5px;transition:background 0.15s;text-decoration:none;}
   .btn-wa-apr:hover{background:#1eba57;}
-  .btn-wa-rej{padding:8px 13px;background:var(--red-light);color:var(--red);border:none;border-radius:7px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.15s;text-decoration:none;display:inline-flex;align-items:center;}
+  .btn-wa-rej{padding:8px 13px;background:var(--red-light);color:var(--red);border:1px solid transparent;border-radius:7px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.15s;text-decoration:none;display:inline-flex;align-items:center;}
   .btn-wa-rej:hover{background:var(--red);color:white;}
   .no-pending{text-align:center;padding:26px;color:var(--gray-400);font-size:14px;}
 
@@ -148,7 +148,7 @@
   .b-emergency{background:#fee2e2;color:#991b1b;}
   .b-half{background:#eff6ff;color:#1d4ed8;font-size:10px;padding:2px 6px;margin-left:3px;}
   .act-btns{display:flex;gap:4px;}
-  .btn-apr,.btn-rej,.btn-del{padding:5px 9px;border-radius:6px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;border:none;transition:all 0.15s;}
+  .btn-apr,.btn-rej,.btn-del{padding:5px 9px;border-radius:6px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;border:none;transition:all 0.15s;text-decoration:none;display:inline-flex;align-items:center;}
   .btn-apr{background:var(--green-light);color:var(--green);}
   .btn-apr:hover{background:var(--green);color:white;}
   .btn-rej{background:var(--red-light);color:var(--red);}
@@ -197,17 +197,6 @@
   .fab-wa:hover{transform:scale(1.1);}
   .toast{position:fixed;bottom:78px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--gray-900);color:white;padding:10px 20px;border-radius:8px;font-size:14px;font-weight:500;opacity:0;transition:all 0.3s;z-index:500;pointer-events:none;white-space:nowrap;}
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
-  .lock-page{max-width:400px;margin:60px auto;padding:0 16px;}
-  .lock-card{background:var(--white);border-radius:var(--radius);padding:36px 28px;box-shadow:var(--shadow-md);border:1px solid var(--gray-200);text-align:center;}
-  .lock-icon{width:64px;height:64px;background:var(--green-light);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:26px;margin:0 auto 18px;}
-  .lock-card h2{font-family:'Playfair Display',serif;font-size:22px;color:var(--gray-900);margin-bottom:8px;}
-  .lock-card p{color:var(--gray-600);font-size:14px;line-height:1.6;margin-bottom:22px;}
-  .lock-input{width:100%;padding:12px 16px;border:1.5px solid var(--gray-200);border-radius:var(--radius-sm);font-family:'DM Sans',sans-serif;font-size:16px;color:var(--gray-800);background:var(--gray-50);outline:none;margin-bottom:14px;text-align:center;letter-spacing:0.1em;}
-  .lock-input:focus{border-color:var(--green);background:var(--white);}
-  .lock-btn{width:100%;padding:13px;background:var(--green);color:white;border:none;border-radius:var(--radius-sm);font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;cursor:pointer;}
-  .lock-btn:hover{background:var(--green-mid);}
-  .lock-error{background:var(--red-light);color:var(--red);font-size:13px;padding:10px 14px;border-radius:var(--radius-sm);margin-bottom:14px;display:none;}
-  .lock-hint{font-size:12px;color:var(--gray-400);margin-top:14px;}
 
   @media(max-width:600px){
     .form-row{grid-template-columns:1fr;}
@@ -227,15 +216,15 @@
   </div>
 </nav>
 
-<div id="page-lock" class="lock-page" style="display:none">
-  <div class="lock-card">
-    <div class="lock-icon">🔒</div>
-    <h2>Admin Access</h2>
-    <p>Enter your password to access the admin panel.</p>
-    <div class="lock-error" id="lock-error">Incorrect password. Please try again.</div>
-    <input class="lock-input" type="password" id="lock-number" maxlength="10" onkeydown="if(event.key==='Enter')checkAdmin()"/>
-    <button class="lock-btn" onclick="checkAdmin()">Enter Admin Panel</button>
-    <div class="lock-hint">Only authorised managers can access this panel.</div>
+<div id="page-lock" style="display:none;max-width:400px;margin:60px auto;padding:0 16px;">
+  <div style="background:white;border-radius:12px;padding:36px 28px;box-shadow:0 4px 16px rgba(0,0,0,0.10);border:1px solid #e5e7eb;text-align:center;">
+    <div style="width:64px;height:64px;background:#e8f5ee;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:26px;margin:0 auto 18px;">🔒</div>
+    <h2 style="font-family:'Playfair Display',serif;font-size:22px;color:#111827;margin-bottom:8px;">Admin Access</h2>
+    <p style="color:#4b5563;font-size:14px;margin-bottom:22px;">Enter your password to access the admin panel.</p>
+    <div id="lock-error" style="display:none;background:#fef2f2;color:#dc2626;font-size:13px;padding:10px 14px;border-radius:8px;margin-bottom:14px;">Incorrect password. Please try again.</div>
+    <input id="lock-number" type="password" maxlength="10" onkeydown="if(event.key==='Enter')checkAdmin()" style="width:100%;padding:12px 16px;border:1.5px solid #e5e7eb;border-radius:8px;font-size:16px;text-align:center;letter-spacing:0.1em;outline:none;margin-bottom:14px;"/>
+    <button onclick="checkAdmin()" style="width:100%;padding:13px;background:#1a6b45;color:white;border:none;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;">Enter Admin Panel</button>
+    <p style="font-size:12px;color:#9ca3af;margin-top:14px;">Only authorised managers can access this panel.</p>
   </div>
 </div>
 
@@ -381,24 +370,6 @@
 </div>
 
 <!-- ══ WA APPROVAL MODAL ══ -->
-<div class="modal-ov" id="wa-modal">
-  <div class="modal">
-    <div class="modal-hdr">
-      <div class="wa-ico">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.554 4.12 1.522 5.851L.03 23.01a.75.75 0 00.922.968l5.334-1.46A11.95 11.95 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0z"/></svg>
-      </div>
-      <div><div class="modal-t" id="m-title">Send via WhatsApp</div><div class="modal-st" id="m-sub">Preview before sending</div></div>
-    </div>
-    <div class="wa-preview"><div class="wa-bubble" id="m-msg"></div></div>
-    <div class="modal-acts">
-      <button class="btn-modal-cls" onclick="closeModal()">Cancel</button>
-      <button class="btn-wa-send" onclick="sendWA()">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.554 4.12 1.522 5.851L.03 23.01a.75.75 0 00.922.968l5.334-1.46A11.95 11.95 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0z"/></svg>
-        Open in WhatsApp
-      </button>
-    </div>
-  </div>
-</div>
 
 <a class="fab-wa" href="#" title="Share form link" onclick="shareLink(event)">
   <svg viewBox="0 0 24 24" fill="white" width="22" height="22"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.554 4.12 1.522 5.851L.03 23.01a.75.75 0 00.922.968l5.334-1.46A11.95 11.95 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0z"/></svg>
@@ -407,51 +378,46 @@
 
 <script>
 const SK='leavedesk_v3';
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// GOOGLE SHEETS API — background sync only
 const API='https://script.google.com/macros/s/AKfycbxu2XsIpKHk8fGEKK9QjQidaGzUnW331rPAYMFR3eK4MQOEZEj5VI9Yw0eIyUEI8004/exec';
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+const ADMIN_NUMBERS=['8108969998','8826797888'];
 
-// Fire-and-forget — uses Image() trick, never blocks UI or WhatsApp
 function sheetSync(params){
-  try{ new Image().src=API+'?'+new URLSearchParams(params).toString(); }catch(e){}
+  try{new Image().src=API+'?'+new URLSearchParams(params).toString();}catch(e){}
 }
-
-// Load latest data from sheet into localStorage
 function loadFromSheet(){
-  fetch(API+'?action=getAll')
-    .then(r=>r.json())
-    .then(r=>{
-      if(!r.success||!r.data||!r.data.length)return;
-      leaves=r.data.map(row=>({
-        id:row.ID,name:row.Name,phone:row.Phone,
-        empId:row.EmpID,dept:row.Dept,type:row.Type,
-        halfDay:row.HalfDay==='true'||row.HalfDay===true,
-        halfSession:row.Session||null,
-        from:row.From,to:row.To,
-        days:parseFloat(row.Days)||1,
-        reason:row.Reason,status:row.Status,
-        submittedAt:row.SubmittedAt
-      })).filter(l=>l.id);
-      save();updStats();renderPQ();renderTbl();
-    }).catch(()=>{});
+  fetch(API+'?action=getAll').then(r=>r.json()).then(r=>{
+    if(!r.success||!r.data||!r.data.length)return;
+    leaves=r.data.map(row=>({id:row.ID,name:row.Name,phone:row.Phone,empId:row.EmpID,dept:row.Dept,type:row.Type,halfDay:row.HalfDay==='true'||row.HalfDay===true,halfSession:row.Session||null,from:row.From,to:row.To,days:parseFloat(row.Days)||1,reason:row.Reason,status:row.Status,submittedAt:row.SubmittedAt})).filter(l=>l.id);
+    save();updStats();renderPQ();renderTbl();
+  }).catch(()=>{});
 }
 let leaves=JSON.parse(localStorage.getItem(SK)||'[]');
 let calMo=new Date().getMonth(),calYr=new Date().getFullYear();
 let mLeave=null,mAction=null;
 function save(){localStorage.setItem(SK,JSON.stringify(leaves));}
 
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// ADMIN AUTHORISED NUMBERS
-const ADMIN_NUMBERS=['8108969998','8826797888'];
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+if(leaves.length===0){
+  const now=new Date();
+  const seed=[
+    {name:'Priya Mehta',phone:'+919876511111',empId:'EMP-001',dept:'Sales',type:'Sick Leave',off:0,d:2,reason:'Fever',status:'Pending',hd:false},
+    {name:'Arjun Singh',phone:'+919876522222',empId:'EMP-002',dept:'Field Team',type:'Casual Leave',off:-3,d:1,reason:'Festival',status:'Approved',hd:false},
+    {name:'Neha Verma',phone:'+919876533333',empId:'EMP-003',dept:'Operations',type:'Personal Leave',off:1,d:0.5,reason:'Doctor visit',status:'Pending',hd:true,sess:'Morning'},
+    {name:'Ravi Kumar',phone:'+919876544444',empId:'EMP-004',dept:'Finance',type:'Emergency Leave',off:-8,d:3,reason:'Family emergency',status:'Approved',hd:false},
+    {name:'Sunita Patel',phone:'+919876555555',empId:'EMP-005',dept:'HR',type:'Casual Leave',off:-1,d:1,reason:'Personal work',status:'Rejected',hd:false},
+  ];
+  seed.forEach((s,i)=>{
+    const fr=new Date(now);fr.setDate(now.getDate()+s.off);
+    const to=new Date(fr);if(!s.hd)to.setDate(fr.getDate()+s.d-1);
+    leaves.push({id:'LV-'+String(i+1).padStart(4,'0'),name:s.name,phone:s.phone,empId:s.empId,dept:s.dept,type:s.type,from:fmt(fr),to:fmt(to),days:s.d,reason:s.reason,status:s.status,halfDay:s.hd,halfSession:s.sess||null,submittedAt:new Date(now.getTime()-(5-i)*864e5).toLocaleString('en-IN')});
+  });
+  save();
+}
 
 function fmt(d){return d.toISOString().split('T')[0];}
 function fmtD(d){if(!d)return'—';const[,m,dy]=d.split('-');return`${parseInt(dy)} ${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][parseInt(m)-1]}`;}
 
 const ADMIN_SESSION='leavedesk_admin';
 function isAdminAuthed(){return sessionStorage.getItem(ADMIN_SESSION)==='1';}
-
 function checkAdmin(){
   const num=document.getElementById('lock-number').value.trim().replace(/\D/g,'');
   const err=document.getElementById('lock-error');
@@ -464,17 +430,14 @@ function checkAdmin(){
     document.querySelectorAll('.nav-tab').forEach(e=>e.classList.remove('active'));
     document.querySelector('.nav-tab[data-page="admin"]').classList.add('active');
     updStats();renderPQ();renderTbl();loadFromSheet();
-  }else{
-    err.style.display='block';
-    document.getElementById('lock-number').value='';
-  }
+  }else{err.style.display='block';document.getElementById('lock-number').value='';}
 }
 
 function showPage(p,btn){
   if(p==='admin'&&!isAdminAuthed()){
     document.querySelectorAll('.page').forEach(e=>e.classList.remove('active'));
-    document.querySelectorAll('.nav-tab').forEach(e=>e.classList.remove('active'));
     document.getElementById('page-lock').style.display='block';
+    document.querySelectorAll('.nav-tab').forEach(e=>e.classList.remove('active'));
     btn.classList.add('active');
     setTimeout(()=>document.getElementById('lock-number').focus(),100);
     return;
@@ -529,7 +492,6 @@ function submitLeave(){
   const days=isHD?0.5:(Math.ceil((new Date(to)-new Date(from))/864e5)+1);
   leaves.unshift({id,name,phone,empId:document.getElementById('f-id').value||'—',dept:document.getElementById('f-dept').value||'—',type,from,to,days,halfDay:isHD,halfSession:isHD?sess:null,reason:document.getElementById('f-reason').value||'—',status:'Pending',submittedAt:new Date().toLocaleString('en-IN')});
   save();
-  // Sync to Google Sheets in background — fire and forget
   sheetSync({action:'add',name,phone,empId:document.getElementById('f-id').value||'—',dept:document.getElementById('f-dept').value||'—',type,halfDay:isHD,halfSession:isHD?sess:'',from,to,days,reason:document.getElementById('f-reason').value||'—'});
   document.getElementById('s-ref').textContent='REF #'+id;
   document.getElementById('form-content').style.display='none';
@@ -576,8 +538,7 @@ function renderPQ(){
     if(phone.length===10) phone='91'+phone;
     const aprUrl='https://wa.me/'+phone+'?text='+encodeURIComponent(buildMsg(l,'Approved'));
     const rejUrl='https://wa.me/'+phone+'?text='+encodeURIComponent(buildMsg(l,'Rejected'));
-    return `
-    <div class="pq-card">
+    return `<div class="pq-card">
       <div class="pq-left">
         <div class="ava" style="width:38px;height:38px;background:${avc(l.name)}20;color:${avc(l.name)};font-size:13px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:600;flex-shrink:0">${ini(l.name)}</div>
         <div class="pq-info">
@@ -586,20 +547,22 @@ function renderPQ(){
         </div>
       </div>
       <div class="pq-right">
-        <a href="${aprUrl}" target="_blank" class="btn-wa-apr" onclick="doAction('${l.id}','Approved')">✓ Approve</a>
-        <a href="${rejUrl}" target="_blank" class="btn-wa-rej" onclick="doAction('${l.id}','Rejected')">✗ Reject</a>
+        <a href="${aprUrl}" target="_blank" class="btn-wa-apr" onclick="markStatus('${l.id}','Approved')">✓ Approve</a>
+        <a href="${rejUrl}" target="_blank" class="btn-wa-rej" onclick="markStatus('${l.id}','Rejected')">✗ Reject</a>
       </div>
     </div>`;
   }).join('');
 }
 
-function doAction(id,status){
+function markStatus(id,status){
   const idx=leaves.findIndex(l=>l.id===id);
   if(idx!==-1){leaves[idx].status=status;save();}
   setTimeout(()=>{updStats();renderPQ();renderTbl();},600);
   sheetSync({action:'updateStatus',id,status});
   toast(status==='Approved'?'✅ Approved':'❌ Rejected');
 }
+
+function delLeave(id){leaves=leaves.filter(l=>l.id!==id);save();renderTbl();renderPQ();toast('Deleted');sheetSync({action:'delete',id});}
 
 // ── MODAL ──
 function buildMsg(l,action){
@@ -610,30 +573,6 @@ function buildMsg(l,action){
     :`❌ *Leave Not Approved*\n\nHi ${l.name.split(' ')[0]},\n\nYour leave request could *not be approved* at this time.\n\n📋 *Details:*\nType: ${l.type}\nDate: ${dr}\nRef: ${l.id}\n\nPlease speak to your manager to discuss alternative dates.\n\n— Management`;
 }
 
-function openModal(id,action){
-  const l=leaves.find(x=>x.id===id);if(!l)return;
-  mLeave=l;mAction=action;
-  document.getElementById('m-title').textContent=action==='Approved'?'✅ Approve Leave':'❌ Reject Leave';
-  document.getElementById('m-sub').textContent=`Send WhatsApp to ${l.name} (${l.phone})`;
-  document.getElementById('m-msg').textContent=buildMsg(l,action);
-  document.getElementById('wa-modal').classList.add('show');
-}
-
-function closeModal(){document.getElementById('wa-modal').classList.remove('show');mLeave=null;mAction=null;}
-
-function sendWA(){
-  if(!mLeave)return;
-  const idx=leaves.findIndex(l=>l.id===mLeave.id);
-  if(idx!==-1){leaves[idx].status=mAction;save();}
-  let phone=mLeave.phone.replace(/[^0-9]/g,'');
-  if(phone.length===10) phone='91'+phone;
-  // Open WhatsApp first — exactly like v2, nothing before it
-  window.open('https://wa.me/'+phone+'?text='+encodeURIComponent(buildMsg(mLeave,mAction)),'_blank');
-  closeModal();updStats();renderPQ();renderTbl();
-  toast(mAction==='Approved'?'✅ Approved & WhatsApp opened':'❌ Rejected & WhatsApp opened');
-  // Sync to sheet after WhatsApp is already open
-  sheetSync({action:'updateStatus',id:mLeave.id,status:mAction});
-}
 
 function renderTbl(){
   const srch=document.getElementById('srch').value.toLowerCase();
@@ -655,19 +594,15 @@ function renderTbl(){
       <td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--gray-600);font-size:13px">${l.reason}</td>
       <td><span class="badge ${bc(l.status)}">${l.status==='Pending'?'⏳ ':l.status==='Approved'?'✓ ':'✗ '}${l.status}</span></td>
       <td><div class="act-btns">
-        ${l.status!=='Approved'?`<button class="btn-apr" onclick="openModal('${l.id}','Approved')">✓</button>`:''}
-        ${l.status!=='Rejected'?`<button class="btn-rej" onclick="openModal('${l.id}','Rejected')">✗</button>`:''}
+        ${l.status!=='Approved'?`<a href="https://wa.me/${(l.phone.replace(/[^0-9]/g,'').length===10?'91':'')+l.phone.replace(/[^0-9]/g,'')}?text=${encodeURIComponent(buildMsg(l,'Approved'))}" target="_blank" class="btn-apr" onclick="markStatus('${l.id}','Approved')">✓</a>`:''}
+        ${l.status!=='Rejected'?`<a href="https://wa.me/${(l.phone.replace(/[^0-9]/g,'').length===10?'91':'')+l.phone.replace(/[^0-9]/g,'')}?text=${encodeURIComponent(buildMsg(l,'Rejected'))}" target="_blank" class="btn-rej" onclick="markStatus('${l.id}','Rejected')">✗</a>`:''}
         <button class="btn-del" onclick="delLeave('${l.id}')">🗑</button>
       </div></td>
     </tr>`).join('');
   updStats();
 }
 
-function delLeave(id){
-  leaves=leaves.filter(l=>l.id!==id);
-  save();renderTbl();renderPQ();toast('Deleted');
-  sheetSync({action:'delete',id});
-}
+function delLeave(id){leaves=leaves.filter(l=>l.id!==id);save();renderTbl();renderPQ();toast('Deleted');}
 
 // ── CALENDAR ──
 function switchView(v,btn){
@@ -708,7 +643,6 @@ function shareLink(e){
 
 function toast(msg){const e=document.getElementById('toast');e.textContent=msg;e.classList.add('show');setTimeout(()=>e.classList.remove('show'),2500);}
 
-document.getElementById('wa-modal').addEventListener('click',function(e){if(e.target===this)closeModal();});
 updStats();
 </script>
 </body>
