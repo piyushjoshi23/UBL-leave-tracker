@@ -589,24 +589,28 @@ function renderPQ(){
   const pend=leaves.filter(l=>l.status==='Pending');
   document.getElementById('pq-badge').textContent=pend.length+' pending';
   const el=document.getElementById('pq-cards');
-  if(!pend.length){el.innerHTML='<div class="no-pending">🎉 All caught up — no pending approvals</div>';return;}
+  if(!pend.length){el.innerHTML='<div class="no-pending">All caught up — no pending approvals</div>';return;}
   el.innerHTML=pend.map(l=>`
     <div class="pq-card">
       <div class="pq-left">
         <div class="ava" style="width:38px;height:38px;background:${avc(l.name)}20;color:${avc(l.name)};font-size:13px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:600;flex-shrink:0">${ini(l.name)}</div>
         <div class="pq-info">
           <div class="pq-name">${l.name} <span style="font-weight:400;color:var(--gray-400);font-size:12px">${l.empId}</span></div>
-          <div class="pq-detail">${l.type}${l.halfDay?` · ½ day (${l.halfSession}) on ${fmtD(l.from)}`:`· ${fmtD(l.from)}${l.from!==l.to?' – '+fmtD(l.to):''} · ${l.days} day${l.days>1?'s':''}`}${l.reason!=='—'?' · '+l.reason:''}</div>
+          <div class="pq-detail">${l.type}${l.halfDay?` · half day (${l.halfSession}) on ${fmtD(l.from)}`:`· ${fmtD(l.from)}${l.from!==l.to?' - '+fmtD(l.to):''} · ${l.days} day${l.days>1?'s':''}`}${l.reason!=='—'?' · '+l.reason:''}</div>
         </div>
       </div>
       <div class="pq-right">
-        <button class="btn-wa-apr" onclick="openModal('${l.id}','Approved')">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.554 4.12 1.522 5.851L.03 23.01a.75.75 0 00.922.968l5.334-1.46A11.95 11.95 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0z"/></svg>
-          ✓ Approve
-        </button>
-        <button class="btn-wa-rej" onclick="openModal('${l.id}','Rejected')">✗ Reject</button>
+        <button class="btn-wa-apr" data-id="${l.id}" data-action="Approved">Approve</button>
+        <button class="btn-wa-rej" data-id="${l.id}" data-action="Rejected">Reject</button>
       </div>
     </div>`).join('');
+
+  // Event delegation — attach once to parent
+  el.onclick=function(e){
+    const btn=e.target.closest('button[data-action]');
+    if(!btn)return;
+    openModal(btn.dataset.id, btn.dataset.action);
+  };
 }
 
 // ── MODAL ──
@@ -640,11 +644,11 @@ function sendWA(){
   let phone=leave.phone.replace(/[^0-9]/g,'');
   if(phone.length===10) phone='91'+phone;
   const waUrl='https://wa.me/'+phone+'?text='+encodeURIComponent(buildMsg(leave,action));
-  // Use the existing fallback anchor tag — most reliable method across all browsers
+  // DEBUG — show exactly what URL is being opened
+  alert('Opening: '+waUrl.substring(0,60));
   const link=document.getElementById('wa-direct-link');
   link.href=waUrl;
   link.click();
-  // Update local state
   const idx=leaves.findIndex(l=>l.id===leave.id);
   if(idx!==-1)leaves[idx].status=action;
   closeModal();
@@ -673,12 +677,20 @@ function renderTbl(){
       <td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--gray-600);font-size:13px">${l.reason}</td>
       <td><span class="badge ${bc(l.status)}">${l.status==='Pending'?'⏳ ':l.status==='Approved'?'✓ ':'✗ '}${l.status}</span></td>
       <td><div class="act-btns">
-        ${l.status!=='Approved'?`<button class="btn-apr" onclick="openModal('${l.id}','Approved')">✓</button>`:''}
-        ${l.status!=='Rejected'?`<button class="btn-rej" onclick="openModal('${l.id}','Rejected')">✗</button>`:''}
-        <button class="btn-del" onclick="delLeave('${l.id}')">🗑</button>
+        ${l.status!=='Approved'?`<button class="btn-apr" data-id="${l.id}" data-action="Approved">✓</button>`:''}
+        ${l.status!=='Rejected'?`<button class="btn-rej" data-id="${l.id}" data-action="Rejected">✗</button>`:''}
+        <button class="btn-del" data-del="${l.id}">🗑</button>
       </div></td>
     </tr>`).join('');
   updStats();
+
+  // Event delegation for table buttons
+  document.getElementById('l-tbody').onclick=function(e){
+    const btn=e.target.closest('button');
+    if(!btn)return;
+    if(btn.dataset.action) openModal(btn.dataset.id, btn.dataset.action);
+    if(btn.dataset.del) delLeave(btn.dataset.del);
+  };
 }
 
 async function delLeave(id){
