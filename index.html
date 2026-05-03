@@ -636,19 +636,20 @@ function closeModal(){document.getElementById('wa-modal').classList.remove('show
 
 function sendWA(){
   if(!mLeave)return;
-  const leave=mLeave, action=mAction;
-  // Fix phone — ensure 12 digit format with country code (same as v2 demo data had)
+  const leave=mLeave,action=mAction;
   let phone=leave.phone.replace(/[^0-9]/g,'');
   if(phone.length===10) phone='91'+phone;
-  // Exact same window.open as v2 — fires synchronously on button click
-  window.open('https://wa.me/'+phone+'?text='+encodeURIComponent(buildMsg(leave,action)),'_blank');
+  const waUrl='https://wa.me/'+phone+'?text='+encodeURIComponent(buildMsg(leave,action));
+  // Use the existing fallback anchor tag — most reliable method across all browsers
+  const link=document.getElementById('wa-direct-link');
+  link.href=waUrl;
+  link.click();
   // Update local state
   const idx=leaves.findIndex(l=>l.id===leave.id);
   if(idx!==-1)leaves[idx].status=action;
   closeModal();
   updStats();renderPQ();renderTbl();
   toast(action==='Approved'?'Approved':'Rejected');
-  // Save to sheet in background — no await, purely background
   apiCall({action:'updateStatus',id:leave.id,status:action}).catch(()=>{});
 }
 
