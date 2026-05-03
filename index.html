@@ -231,7 +231,9 @@
   </div>
 </nav>
 
-<!-- ══ ADMIN LOCK SCREEN ══ -->
+<div id="browser-warning" style="display:none;background:#d97706;color:white;padding:10px 16px;font-size:13px;font-weight:500;text-align:center;line-height:1.5;">
+  You are inside WhatsApp browser. Tap <strong>... → Open in Chrome</strong> for full functionality.
+</div>
 <div id="page-lock" class="lock-page" style="display:none">
   <div class="lock-card">
     <div class="lock-icon">🔒</div>
@@ -719,6 +721,12 @@ function shareLink(e){
 function toast(msg){const e=document.getElementById('toast');e.textContent=msg;e.classList.add('show');setTimeout(()=>e.classList.remove('show'),2500);}
 
 document.getElementById('wa-modal').addEventListener('click',function(e){if(e.target===this)closeModal();});
+
+// Detect WhatsApp in-app browser and show warning
+const ua=navigator.userAgent||'';
+if(/\bwv\b/.test(ua)||/WhatsApp/.test(ua)||((/Android/.test(ua)||/iPhone/.test(ua))&&/Version\//.test(ua)&&/Safari/.test(ua)===false)){
+  document.getElementById('browser-warning').style.display='block';
+}
 
 </script>
 </body>
