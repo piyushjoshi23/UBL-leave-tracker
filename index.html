@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LeaveDesk</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green:#1a6b45;--green-light:#e8f5ee;--green-mid:#2d8a5e;--green-pale:#f0faf5;
+    --amber:#d97706;--amber-light:#fef3c7;
+    --red:#dc2626;--red-light:#fef2f2;
+    --blue:#1d4ed8;--blue-light:#dbeafe;
+    --gray-50:#f9fafb;--gray-100:#f3f4f6;--gray-200:#e5e7eb;
+    --gray-400:#9ca3af;--gray-600:#4b5563;--gray-700:#374151;
+    --gray-800:#1f2937;--gray-900:#111827;--white:#ffffff;
+    --shadow-sm:0 1px 3px rgba(0,0,0,0.08);
+    --shadow-md:0 4px 16px rgba(0,0,0,0.10);
+    --shadow-lg:0 8px 32px rgba(0,0,0,0.14);
+    --radius:12px;--radius-sm:8px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'DM Sans',sans-serif;background:#f4f7f4;color:var(--gray-800);min-height:100vh;font-size:15px;}
+
+  nav{background:var(--green);padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:60px;position:sticky;top:0;z-index:100;box-shadow:var(--shadow-md);}
+  .nav-brand{font-family:'Playfair Display',serif;color:white;font-size:20px;display:flex;align-items:center;gap:10px;}
+  .nav-brand span{width:32px;height:32px;background:rgba(255,255,255,0.2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;}
+  .nav-tabs{display:flex;gap:4px;}
+  .nav-tab{padding:8px 16px;border-radius:8px;color:rgba(255,255,255,0.7);cursor:pointer;font-size:14px;font-weight:500;transition:all 0.2s;border:none;background:transparent;}
+  .nav-tab.active,.nav-tab:hover{background:rgba(255,255,255,0.15);color:white;}
+
+  .page{display:none;}.page.active{display:block;}
+
+  /* FORM */
+  .form-page{max-width:580px;margin:0 auto;padding:28px 16px 80px;}
+  .form-hero{text-align:center;margin-bottom:24px;padding:26px 22px;background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow-sm);border:1px solid var(--gray-200);position:relative;overflow:hidden;}
+  .form-hero::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,var(--green),var(--green-mid));}
+  .form-hero h1{font-family:'Playfair Display',serif;font-size:23px;color:var(--gray-900);margin-bottom:6px;}
+  .form-hero p{color:var(--gray-600);font-size:14px;line-height:1.6;}
+  .wa-badge{display:inline-flex;align-items:center;gap:5px;background:#dcf8c6;color:#1a6b2e;font-size:12px;font-weight:600;padding:3px 11px;border-radius:20px;margin-bottom:11px;}
+  .card{background:var(--white);border-radius:var(--radius);padding:22px;box-shadow:var(--shadow-sm);border:1px solid var(--gray-200);margin-bottom:16px;}
+  .card-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.07em;color:var(--green);margin-bottom:16px;}
+  .form-row{display:grid;grid-template-columns:1fr 1fr;gap:13px;}
+  .form-group{margin-bottom:14px;}.form-group:last-child{margin-bottom:0;}
+  label{display:block;font-size:13px;font-weight:500;color:var(--gray-700);margin-bottom:5px;}
+  label .req{color:var(--red);margin-left:2px;}
+  input,select,textarea{width:100%;padding:10px 12px;border:1.5px solid var(--gray-200);border-radius:var(--radius-sm);font-family:'DM Sans',sans-serif;font-size:14px;color:var(--gray-800);background:var(--gray-50);transition:all 0.2s;outline:none;}
+  input:focus,select:focus,textarea:focus{border-color:var(--green);background:var(--white);box-shadow:0 0 0 3px rgba(26,107,69,0.10);}
+  textarea{resize:vertical;min-height:76px;}
+
+  .ltype-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
+  .ltype-btn{padding:11px;border:1.5px solid var(--gray-200);border-radius:var(--radius-sm);background:var(--gray-50);cursor:pointer;text-align:center;transition:all 0.2s;font-family:'DM Sans',sans-serif;}
+  .ltype-btn .icon{font-size:17px;margin-bottom:3px;}
+  .ltype-btn .name{font-size:12px;font-weight:500;color:var(--gray-700);}
+  .ltype-btn:hover,.ltype-btn.sel{border-color:var(--green);background:var(--green-light);}
+  .ltype-btn.sel .name{color:var(--green);}
+
+  /* HALF DAY */
+  .halfday-row{display:flex;align-items:center;justify-content:space-between;padding:12px 13px;background:var(--gray-50);border:1.5px solid var(--gray-200);border-radius:var(--radius-sm);margin-top:13px;transition:all 0.2s;}
+  .halfday-row.on{background:#eff6ff;border-color:#93c5fd;}
+  .hd-label{display:flex;align-items:center;gap:8px;}
+  .hd-label-text .t1{font-size:14px;font-weight:500;color:var(--gray-800);}
+  .hd-label-text .t2{font-size:12px;color:var(--gray-400);margin-top:1px;}
+  .tog{position:relative;width:38px;height:21px;flex-shrink:0;}
+  .tog input{opacity:0;width:0;height:0;position:absolute;}
+  .tog-track{position:absolute;top:0;left:0;right:0;bottom:0;background:var(--gray-300);border-radius:11px;cursor:pointer;transition:background 0.2s;}
+  .tog-track::after{content:'';position:absolute;width:15px;height:15px;left:3px;top:3px;background:white;border-radius:50%;transition:transform 0.2s;}
+  .tog input:checked+.tog-track{background:var(--blue);}
+  .tog input:checked+.tog-track::after{transform:translateX(17px);}
+  .hd-opts{display:none;grid-template-columns:1fr 1fr;gap:8px;margin-top:11px;}
+  .hd-opts.show{display:grid;}
+  .hd-opt{padding:10px;border:1.5px solid var(--gray-200);border-radius:var(--radius-sm);background:var(--white);cursor:pointer;text-align:center;font-size:13px;font-weight:500;color:var(--gray-600);transition:all 0.15s;}
+  .hd-opt:hover,.hd-opt.sel{border-color:var(--blue);background:var(--blue-light);color:var(--blue);}
+
+  .dur-box{background:var(--green-pale);border:1px solid #b6dfc8;border-radius:var(--radius-sm);padding:10px 15px;display:flex;align-items:center;justify-content:space-between;margin-top:13px;}
+  .dur-box.hd{background:#eff6ff;border-color:#93c5fd;}
+  .dur-box span{font-size:13px;color:var(--gray-600);}
+  .dur-box strong{font-size:17px;font-weight:600;color:var(--green);}
+  .dur-box.hd strong{color:var(--blue);}
+
+  .btn-submit{width:100%;padding:13px;background:var(--green);color:white;border:none;border-radius:var(--radius-sm);font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:7px;margin-top:4px;}
+  .btn-submit:hover{background:var(--green-mid);transform:translateY(-1px);box-shadow:var(--shadow-md);}
+
+  .success-screen{text-align:center;padding:34px 22px;display:none;}
+  .success-icon{width:64px;height:64px;background:var(--green-light);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 14px;animation:pop 0.4s cubic-bezier(0.34,1.56,0.64,1);}
+  @keyframes pop{from{transform:scale(0);opacity:0;}to{transform:scale(1);opacity:1;}}
+  .success-screen h2{font-family:'Playfair Display',serif;font-size:21px;color:var(--gray-900);margin-bottom:7px;}
+  .success-screen p{color:var(--gray-600);font-size:14px;line-height:1.6;}
+  .success-ref{display:inline-block;background:var(--green-light);color:var(--green);font-size:13px;font-weight:600;padding:6px 16px;border-radius:20px;margin:13px 0;letter-spacing:0.04em;}
+  .btn-new{margin-top:14px;padding:10px 24px;background:transparent;color:var(--green);border:1.5px solid var(--green);border-radius:var(--radius-sm);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:all 0.2s;}
+  .btn-new:hover{background:var(--green-light);}
+
+  /* ADMIN */
+  .admin-page{padding:22px 20px 80px;max-width:1120px;margin:0 auto;}
+  .admin-hdr{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px;}
+  .admin-hdr h2{font-family:'Playfair Display',serif;font-size:21px;color:var(--gray-900);}
+  .admin-hdr p{font-size:13px;color:var(--gray-400);margin-top:2px;}
+  .stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:11px;margin-bottom:20px;}
+  .stat-card{background:var(--white);border:1px solid var(--gray-200);border-radius:var(--radius);padding:14px 16px;box-shadow:var(--shadow-sm);}
+  .stat-lbl{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:var(--gray-400);margin-bottom:5px;}
+  .stat-val{font-size:25px;font-weight:600;color:var(--gray-900);line-height:1;}
+  .stat-val.g{color:var(--green);}.stat-val.a{color:var(--amber);}.stat-val.r{color:var(--red);}.stat-val.b{color:var(--blue);}
+
+  /* PENDING QUEUE */
+  .pq-section{background:var(--white);border:1px solid var(--gray-200);border-radius:var(--radius);padding:18px;margin-bottom:20px;box-shadow:var(--shadow-sm);}
+  .pq-title{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:var(--gray-400);margin-bottom:13px;display:flex;align-items:center;gap:8px;}
+  .pq-badge{background:var(--amber-light);color:var(--amber);font-size:11px;padding:2px 8px;border-radius:20px;}
+  .pq-cards{display:flex;flex-direction:column;gap:9px;}
+  .pq-card{border:1px solid var(--gray-200);border-radius:var(--radius-sm);padding:13px 15px;display:flex;align-items:center;justify-content:space-between;gap:11px;flex-wrap:wrap;background:var(--gray-50);transition:background 0.15s;}
+  .pq-card:hover{background:var(--white);}
+  .pq-left{display:flex;align-items:center;gap:11px;flex:1;min-width:0;}
+  .pq-info{min-width:0;}
+  .pq-name{font-weight:600;font-size:14px;color:var(--gray-900);}
+  .pq-detail{font-size:12px;color:var(--gray-400);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .pq-right{display:flex;gap:7px;align-items:center;flex-shrink:0;}
+  .btn-wa-apr{padding:8px 13px;background:#25d366;color:white;border:none;border-radius:7px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:5px;transition:background 0.15s;}
+  .btn-wa-apr:hover{background:#1eba57;}
+  .btn-wa-rej{padding:8px 13px;background:var(--red-light);color:var(--red);border:none;border-radius:7px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.15s;}
+  .btn-wa-rej:hover{background:var(--red);color:white;}
+  .no-pending{text-align:center;padding:26px;color:var(--gray-400);font-size:14px;}
+
+  .filters-bar{display:flex;gap:9px;margin-bottom:14px;flex-wrap:wrap;align-items:center;}
+  .filter-sel,.search-inp{padding:8px 12px;border:1.5px solid var(--gray-200);border-radius:var(--radius-sm);font-family:'DM Sans',sans-serif;font-size:13px;background:var(--white);color:var(--gray-700);outline:none;transition:border-color 0.2s;}
+  .filter-sel:focus,.search-inp:focus{border-color:var(--green);}
+  .search-inp{flex:1;min-width:170px;}
+  .btn-exp{padding:8px 14px;background:var(--green);color:white;border:none;border-radius:var(--radius-sm);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:5px;margin-left:auto;transition:background 0.2s;}
+  .btn-exp:hover{background:var(--green-mid);}
+
+  .tbl-wrap{background:var(--white);border:1px solid var(--gray-200);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow-sm);}
+  table{width:100%;border-collapse:collapse;font-size:14px;}
+  thead{background:var(--gray-50);}
+  th{padding:11px 13px;text-align:left;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:var(--gray-400);border-bottom:1px solid var(--gray-200);white-space:nowrap;}
+  td{padding:11px 13px;border-bottom:1px solid var(--gray-100);vertical-align:middle;}
+  tr:last-child td{border-bottom:none;}
+  tr:hover td{background:var(--gray-50);}
+  .ava{width:31px;height:31px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex-shrink:0;}
+  .emp-cell{display:flex;align-items:center;gap:8px;}
+  .emp-nm{font-weight:500;color:var(--gray-800);}
+  .emp-ph{font-size:12px;color:var(--gray-400);}
+  .badge{display:inline-flex;align-items:center;gap:3px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600;white-space:nowrap;}
+  .b-pend{background:var(--amber-light);color:var(--amber);}
+  .b-appr{background:var(--green-light);color:var(--green);}
+  .b-rejt{background:var(--red-light);color:var(--red);}
+  .b-sick{background:#fce7f3;color:#be185d;}
+  .b-casual{background:#ede9fe;color:#6d28d9;}
+  .b-personal{background:#dbeafe;color:#1d4ed8;}
+  .b-emergency{background:#fee2e2;color:#991b1b;}
+  .b-half{background:#eff6ff;color:#1d4ed8;font-size:10px;padding:2px 6px;margin-left:3px;}
+  .act-btns{display:flex;gap:4px;}
+  .btn-apr,.btn-rej,.btn-del{padding:5px 9px;border-radius:6px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;border:none;transition:all 0.15s;}
+  .btn-apr{background:var(--green-light);color:var(--green);}
+  .btn-apr:hover{background:var(--green);color:white;}
+  .btn-rej{background:var(--red-light);color:var(--red);}
+  .btn-rej:hover{background:var(--red);color:white;}
+  .btn-del{background:var(--gray-100);color:var(--gray-400);}
+  .btn-del:hover{background:var(--gray-200);}
+  .empty-st{text-align:center;padding:48px 20px;color:var(--gray-400);}
+  .empty-st .ei{font-size:34px;margin-bottom:9px;}
+
+  /* CALENDAR */
+  .cal-tog{display:flex;border:1.5px solid var(--gray-200);border-radius:var(--radius-sm);overflow:hidden;}
+  .cal-tog button{padding:7px 14px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;border:none;background:var(--white);color:var(--gray-600);cursor:pointer;transition:all 0.15s;}
+  .cal-tog button.active{background:var(--green);color:white;}
+  .cal-view{display:none;background:var(--white);border:1px solid var(--gray-200);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow-sm);}
+  .cal-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:13px;}
+  .cal-hdr h3{font-family:'Playfair Display',serif;font-size:17px;color:var(--gray-900);}
+  .cal-nav{display:flex;gap:6px;}
+  .cal-nav button{width:29px;height:29px;border-radius:7px;border:1px solid var(--gray-200);background:var(--white);cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;transition:all 0.15s;}
+  .cal-nav button:hover{background:var(--green);color:white;border-color:var(--green);}
+  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;}
+  .cal-dh{text-align:center;font-size:10px;font-weight:600;text-transform:uppercase;color:var(--gray-400);padding:5px 0;letter-spacing:0.05em;}
+  .cal-d{min-height:60px;border-radius:7px;padding:5px;background:var(--gray-50);border:1px solid transparent;font-size:11px;}
+  .cal-d.today{border-color:var(--green);}
+  .cal-d.om{opacity:0.3;}
+  .cal-dn{font-weight:600;font-size:12px;color:var(--gray-700);margin-bottom:3px;}
+  .cal-ev{font-size:10px;font-weight:600;padding:1px 5px;border-radius:3px;background:var(--green-light);color:var(--green);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .cal-ev.hd{background:#eff6ff;color:#1d4ed8;}
+
+  /* WA MODAL */
+  .modal-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:400;align-items:center;justify-content:center;padding:16px;}
+  .modal-ov.show{display:flex;}
+  .modal{background:var(--white);border-radius:var(--radius);padding:26px;max-width:480px;width:100%;box-shadow:var(--shadow-lg);}
+  .modal-hdr{display:flex;align-items:center;gap:10px;margin-bottom:15px;}
+  .wa-ico{width:38px;height:38px;background:#25d366;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .modal-t{font-weight:600;font-size:15px;color:var(--gray-900);}
+  .modal-st{font-size:12px;color:var(--gray-400);}
+  .wa-preview{background:#e5ddd5;border-radius:var(--radius-sm);padding:13px;margin-bottom:15px;}
+  .wa-bubble{background:#dcf8c6;border-radius:0 8px 8px 8px;padding:10px 12px;font-size:13px;line-height:1.65;color:#1a1a1a;white-space:pre-wrap;max-height:220px;overflow-y:auto;}
+  .modal-acts{display:flex;gap:9px;}
+  .btn-wa-send{flex:1;padding:11px;background:#25d366;color:white;border:none;border-radius:var(--radius-sm);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:background 0.2s;}
+  .btn-wa-send:hover{background:#1eba57;}
+  .btn-modal-cls{padding:11px 16px;background:var(--gray-100);color:var(--gray-600);border:none;border-radius:var(--radius-sm);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;}
+  .btn-modal-cls:hover{background:var(--gray-200);}
+
+  .fab-wa{position:fixed;bottom:24px;right:24px;background:#25d366;color:white;width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 18px rgba(37,211,102,0.45);cursor:pointer;transition:transform 0.2s;text-decoration:none;z-index:200;}
+  .fab-wa:hover{transform:scale(1.1);}
+  .toast{position:fixed;bottom:78px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--gray-900);color:white;padding:10px 20px;border-radius:8px;font-size:14px;font-weight:500;opacity:0;transition:all 0.3s;z-index:500;pointer-events:none;white-space:nowrap;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  @media(max-width:600px){
+    .form-row{grid-template-columns:1fr;}
+    .tbl-wrap{overflow-x:auto;}
+    table{min-width:700px;}
+    .pq-card{flex-direction:column;align-items:flex-start;}
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-brand"><span>📋</span>LeaveDesk</div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="showPage('employee',this)">Apply Leave</button>
+    <button class="nav-tab" onclick="showPage('admin',this)">Admin Panel</button>
+  </div>
+</nav>
+
+<!-- ══ EMPLOYEE FORM ══ -->
+<div id="page-employee" class="page active">
+  <div class="form-page">
+    <div class="form-hero">
+      <div class="wa-badge">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.554 4.12 1.522 5.851L.03 23.01a.75.75 0 00.922.968l5.334-1.46A11.95 11.95 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.75a9.74 9.74 0 01-5.023-1.394l-.36-.213-3.728 1.02 1.053-3.63-.234-.374A9.718 9.718 0 012.25 12C2.25 6.615 6.615 2.25 12 2.25S21.75 6.615 21.75 12 17.385 21.75 12 21.75z"/></svg>
+        WhatsApp linked
+      </div>
+      <h1>Apply for Leave</h1>
+      <p>Submit your request — your manager will approve and you'll be notified on WhatsApp.</p>
+    </div>
+
+    <div id="form-content">
+      <div class="card">
+        <div class="card-title">Your Details</div>
+        <div class="form-row">
+          <div class="form-group"><label>Full Name <span class="req">*</span></label><input type="text" id="f-name" placeholder="Rahul Sharma"/></div>
+          <div class="form-group"><label>Employee ID</label><input type="text" id="f-id" placeholder="EMP-001"/></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>WhatsApp Number <span class="req">*</span></label><input type="tel" id="f-phone" placeholder="+91 98765 43210"/></div>
+          <div class="form-group"><label>Department</label>
+            <select id="f-dept"><option value="">Select dept.</option><option>Sales</option><option>Operations</option><option>Field Team</option><option>Finance</option><option>HR</option><option>IT</option><option>Marketing</option></select>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Leave Type</div>
+        <div class="ltype-grid">
+          <div class="ltype-btn" onclick="selType(this,'Sick Leave')"><div class="icon">🤒</div><div class="name">Sick Leave</div></div>
+          <div class="ltype-btn" onclick="selType(this,'Casual Leave')"><div class="icon">☀️</div><div class="name">Casual Leave</div></div>
+          <div class="ltype-btn" onclick="selType(this,'Personal Leave')"><div class="icon">👤</div><div class="name">Personal Leave</div></div>
+          <div class="ltype-btn" onclick="selType(this,'Emergency Leave')"><div class="icon">🚨</div><div class="name">Emergency Leave</div></div>
+        </div>
+        <input type="hidden" id="f-type"/>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Leave Dates</div>
+        <div class="form-row">
+          <div class="form-group"><label>From Date <span class="req">*</span></label><input type="date" id="f-from" oninput="calcDur()"/></div>
+          <div class="form-group" id="to-grp"><label>To Date <span class="req">*</span></label><input type="date" id="f-to" oninput="calcDur()"/></div>
+        </div>
+
+        <div class="halfday-row" id="hd-row">
+          <div class="hd-label">
+            <span style="font-size:18px">🌓</span>
+            <div class="hd-label-text">
+              <div class="t1">Half Day Leave</div>
+              <div class="t2">Only need half a day off</div>
+            </div>
+          </div>
+          <label class="tog"><input type="checkbox" id="hd-toggle" onchange="toggleHD(this)"/><span class="tog-track"></span></label>
+        </div>
+
+        <div class="hd-opts" id="hd-opts">
+          <div class="hd-opt" onclick="selSession(this,'Morning')">🌅 Morning (1st half)</div>
+          <div class="hd-opt" onclick="selSession(this,'Afternoon')">🌇 Afternoon (2nd half)</div>
+        </div>
+        <input type="hidden" id="f-session"/>
+
+        <div class="dur-box" id="dur-box" style="display:none">
+          <span id="dur-lbl">Duration</span>
+          <strong id="dur-txt">—</strong>
+        </div>
+
+        <div class="form-group" style="margin-top:13px;margin-bottom:0">
+          <label>Reason / Notes</label>
+          <textarea id="f-reason" placeholder="Brief reason for leave (optional)"></textarea>
+        </div>
+      </div>
+
+      <button class="btn-submit" onclick="submitLeave()">✓ Submit Leave Request</button>
+    </div>
+
+    <div class="card success-screen" id="success-screen">
+      <div class="success-icon">✓</div>
+      <h2>Request Submitted!</h2>
+      <p>Your leave request is pending manager approval. You'll receive a WhatsApp message once reviewed.</p>
+      <div class="success-ref" id="s-ref">REF #LV-0001</div>
+      <p style="font-size:13px;color:var(--gray-400)">Keep an eye on your WhatsApp for the decision.</p><br>
+      <button class="btn-new" onclick="resetForm()">+ New Request</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ ADMIN ══ -->
+<div id="page-admin" class="page">
+  <div class="admin-page">
+    <div class="admin-hdr">
+      <div><h2>Leave Dashboard</h2><p id="a-date"></p></div>
+      <div class="cal-tog">
+        <button class="active" onclick="switchView('table',this)">📋 List</button>
+        <button onclick="switchView('cal',this)">📅 Calendar</button>
+      </div>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-lbl">Total</div><div class="stat-val" id="s-total">0</div></div>
+      <div class="stat-card"><div class="stat-lbl">Pending</div><div class="stat-val a" id="s-pend">0</div></div>
+      <div class="stat-card"><div class="stat-lbl">Approved</div><div class="stat-val g" id="s-appr">0</div></div>
+      <div class="stat-card"><div class="stat-lbl">Rejected</div><div class="stat-val r" id="s-rejt">0</div></div>
+      <div class="stat-card"><div class="stat-lbl">On Leave Today</div><div class="stat-val g" id="s-today">0</div></div>
+      <div class="stat-card"><div class="stat-lbl">Half Days</div><div class="stat-val b" id="s-half">0</div></div>
+    </div>
+
+    <!-- Approval Queue -->
+    <div class="pq-section">
+      <div class="pq-title">⏳ Awaiting Approval <span class="pq-badge" id="pq-badge">0 pending</span></div>
+      <div class="pq-cards" id="pq-cards"></div>
+    </div>
+
+    <div class="filters-bar">
+      <input class="search-inp" type="text" id="srch" placeholder="Search name, ID, phone..." oninput="renderTbl()"/>
+      <select class="filter-sel" id="fl-st" onchange="renderTbl()">
+        <option value="">All Status</option><option>Pending</option><option>Approved</option><option>Rejected</option>
+      </select>
+      <select class="filter-sel" id="fl-tp" onchange="renderTbl()">
+        <option value="">All Types</option><option>Sick Leave</option><option>Casual Leave</option><option>Personal Leave</option><option>Emergency Leave</option>
+      </select>
+      <button class="btn-exp" onclick="exportCSV()">⬇ Export CSV</button>
+    </div>
+
+    <div id="tbl-view">
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Employee</th><th>Type</th><th>From</th><th>To / Session</th><th>Days</th><th>Reason</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="l-tbody"></tbody>
+        </table>
+        <div class="empty-st" id="empty-st" style="display:none"><div class="ei">📭</div><p>No leave requests yet.</p></div>
+      </div>
+    </div>
+
+    <div id="cal-view" class="cal-view" style="display:none">
+      <div class="cal-hdr"><h3 id="cal-lbl"></h3><div class="cal-nav"><button onclick="chMo(-1)">‹</button><button onclick="chMo(1)">›</button></div></div>
+      <div class="cal-grid" id="cal-grid"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ WA APPROVAL MODAL ══ -->
+<div class="modal-ov" id="wa-modal">
+  <div class="modal">
+    <div class="modal-hdr">
+      <div class="wa-ico">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.554 4.12 1.522 5.851L.03 23.01a.75.75 0 00.922.968l5.334-1.46A11.95 11.95 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0z"/></svg>
+      </div>
+      <div><div class="modal-t" id="m-title">Send via WhatsApp</div><div class="modal-st" id="m-sub">Preview before sending</div></div>
+    </div>
+    <div class="wa-preview"><div class="wa-bubble" id="m-msg"></div></div>
+    <div class="modal-acts">
+      <button class="btn-modal-cls" onclick="closeModal()">Cancel</button>
+      <button class="btn-wa-send" onclick="sendWA()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.554 4.12 1.522 5.851L.03 23.01a.75.75 0 00.922.968l5.334-1.46A11.95 11.95 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0z"/></svg>
+        Open in WhatsApp
+      </button>
+    </div>
+  </div>
+</div>
+
+<a class="fab-wa" href="#" title="Share form link" onclick="shareLink(event)">
+  <svg viewBox="0 0 24 24" fill="white" width="22" height="22"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.554 4.12 1.522 5.851L.03 23.01a.75.75 0 00.922.968l5.334-1.46A11.95 11.95 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0z"/></svg>
+</a>
+<div class="toast" id="toast"></div>
+
+<script>
+const SK='leavedesk_v3';
+let leaves=JSON.parse(localStorage.getItem(SK)||'[]');
+let calMo=new Date().getMonth(),calYr=new Date().getFullYear();
+let mLeave=null,mAction=null;
+function save(){localStorage.setItem(SK,JSON.stringify(leaves));}
+
+if(leaves.length===0){
+  const now=new Date();
+  const seed=[
+    {name:'Priya Mehta',phone:'+919876511111',empId:'EMP-001',dept:'Sales',type:'Sick Leave',off:0,d:2,reason:'Fever',status:'Pending',hd:false},
+    {name:'Arjun Singh',phone:'+919876522222',empId:'EMP-002',dept:'Field Team',type:'Casual Leave',off:-3,d:1,reason:'Festival',status:'Approved',hd:false},
+    {name:'Neha Verma',phone:'+919876533333',empId:'EMP-003',dept:'Operations',type:'Personal Leave',off:1,d:0.5,reason:'Doctor visit',status:'Pending',hd:true,sess:'Morning'},
+    {name:'Ravi Kumar',phone:'+919876544444',empId:'EMP-004',dept:'Finance',type:'Emergency Leave',off:-8,d:3,reason:'Family emergency',status:'Approved',hd:false},
+    {name:'Sunita Patel',phone:'+919876555555',empId:'EMP-005',dept:'HR',type:'Casual Leave',off:-1,d:1,reason:'Personal work',status:'Rejected',hd:false},
+  ];
+  seed.forEach((s,i)=>{
+    const fr=new Date(now);fr.setDate(now.getDate()+s.off);
+    const to=new Date(fr);if(!s.hd)to.setDate(fr.getDate()+s.d-1);
+    leaves.push({id:'LV-'+String(i+1).padStart(4,'0'),name:s.name,phone:s.phone,empId:s.empId,dept:s.dept,type:s.type,from:fmt(fr),to:fmt(to),days:s.d,reason:s.reason,status:s.status,halfDay:s.hd,halfSession:s.sess||null,submittedAt:new Date(now.getTime()-(5-i)*864e5).toLocaleString('en-IN')});
+  });
+  save();
+}
+
+function fmt(d){return d.toISOString().split('T')[0];}
+function fmtD(d){if(!d)return'—';const[,m,dy]=d.split('-');return`${parseInt(dy)} ${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][parseInt(m)-1]}`;}
+
+function showPage(p,btn){
+  document.querySelectorAll('.page').forEach(e=>e.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(e=>e.classList.remove('active'));
+  document.getElementById('page-'+p).classList.add('active');
+  btn.classList.add('active');
+  if(p==='admin'){updStats();renderPQ();renderTbl();}
+}
+
+// ── FORM ──
+function selType(btn,type){document.querySelectorAll('.ltype-btn').forEach(b=>b.classList.remove('sel'));btn.classList.add('sel');document.getElementById('f-type').value=type;}
+
+function toggleHD(cb){
+  const opts=document.getElementById('hd-opts'),toGrp=document.getElementById('to-grp'),row=document.getElementById('hd-row');
+  if(cb.checked){opts.classList.add('show');toGrp.style.display='none';row.classList.add('on');document.getElementById('f-to').value=document.getElementById('f-from').value;}
+  else{opts.classList.remove('show');toGrp.style.display='block';row.classList.remove('on');document.getElementById('f-session').value='';document.querySelectorAll('.hd-opt').forEach(o=>o.classList.remove('sel'));}
+  calcDur();
+}
+
+function selSession(el,val){document.querySelectorAll('.hd-opt').forEach(o=>o.classList.remove('sel'));el.classList.add('sel');document.getElementById('f-session').value=val;calcDur();}
+
+function calcDur(){
+  const isHD=document.getElementById('hd-toggle').checked,f=document.getElementById('f-from').value;
+  const box=document.getElementById('dur-box'),txt=document.getElementById('dur-txt'),lbl=document.getElementById('dur-lbl');
+  if(!f)return;
+  if(isHD){
+    const s=document.getElementById('f-session').value;
+    box.style.display='flex';box.className='dur-box hd';
+    txt.textContent=s?s+' half day':'½ day';lbl.textContent='Duration';return;
+  }
+  const t=document.getElementById('f-to').value;if(!t)return;
+  const diff=Math.ceil((new Date(t)-new Date(f))/864e5)+1;
+  if(diff>0){box.style.display='flex';box.className='dur-box';txt.textContent=diff+(diff===1?' day':' days');lbl.textContent='Duration';}
+}
+
+function submitLeave(){
+  const name=document.getElementById('f-name').value.trim(),phone=document.getElementById('f-phone').value.trim();
+  const type=document.getElementById('f-type').value,from=document.getElementById('f-from').value;
+  const isHD=document.getElementById('hd-toggle').checked,sess=document.getElementById('f-session').value;
+  const to=isHD?from:document.getElementById('f-to').value;
+  if(!name){toast('Please enter your name');return;}
+  if(!phone){toast('Please enter your WhatsApp number');return;}
+  if(!type){toast('Please select a leave type');return;}
+  if(!from){toast('Please select start date');return;}
+  if(!isHD&&!to){toast('Please select end date');return;}
+  if(!isHD&&new Date(to)<new Date(from)){toast('End date must be after start date');return;}
+  if(isHD&&!sess){toast('Please select Morning or Afternoon');return;}
+  const id='LV-'+String(leaves.length+1).padStart(4,'0');
+  const days=isHD?0.5:(Math.ceil((new Date(to)-new Date(from))/864e5)+1);
+  leaves.unshift({id,name,phone,empId:document.getElementById('f-id').value||'—',dept:document.getElementById('f-dept').value||'—',type,from,to,days,halfDay:isHD,halfSession:isHD?sess:null,reason:document.getElementById('f-reason').value||'—',status:'Pending',submittedAt:new Date().toLocaleString('en-IN')});
+  save();
+  document.getElementById('s-ref').textContent='REF #'+id;
+  document.getElementById('form-content').style.display='none';
+  document.getElementById('success-screen').style.display='block';
+}
+
+function resetForm(){
+  document.getElementById('form-content').style.display='block';
+  document.getElementById('success-screen').style.display='none';
+  ['f-name','f-id','f-phone','f-reason','f-from','f-to'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('f-dept').value='';document.getElementById('f-type').value='';document.getElementById('f-session').value='';
+  document.getElementById('hd-toggle').checked=false;
+  document.getElementById('hd-opts').classList.remove('show');
+  document.getElementById('to-grp').style.display='block';
+  document.getElementById('hd-row').classList.remove('on');
+  document.getElementById('dur-box').style.display='none';
+  document.querySelectorAll('.ltype-btn,.hd-opt').forEach(b=>b.classList.remove('sel'));
+}
+
+// ── ADMIN ──
+const COLS=['#1a6b45','#6d28d9','#be185d','#1d4ed8','#d97706','#0e7490','#9a3412','#065f46'];
+function avc(n){let h=0;for(const c of n)h=((h<<5)-h)+c.charCodeAt(0);return COLS[Math.abs(h)%COLS.length];}
+function ini(n){return n.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();}
+function bc(v){return{'Pending':'b-pend','Approved':'b-appr','Rejected':'b-rejt','Sick Leave':'b-sick','Casual Leave':'b-casual','Personal Leave':'b-personal','Emergency Leave':'b-emergency'}[v]||'';}
+
+function updStats(){
+  const t=fmt(new Date());
+  document.getElementById('s-total').textContent=leaves.length;
+  document.getElementById('s-pend').textContent=leaves.filter(l=>l.status==='Pending').length;
+  document.getElementById('s-appr').textContent=leaves.filter(l=>l.status==='Approved').length;
+  document.getElementById('s-rejt').textContent=leaves.filter(l=>l.status==='Rejected').length;
+  document.getElementById('s-today').textContent=leaves.filter(l=>l.status==='Approved'&&l.from<=t&&l.to>=t).length;
+  document.getElementById('s-half').textContent=leaves.filter(l=>l.halfDay).length;
+  document.getElementById('a-date').textContent=new Date().toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+}
+
+function renderPQ(){
+  const pend=leaves.filter(l=>l.status==='Pending');
+  document.getElementById('pq-badge').textContent=pend.length+' pending';
+  const el=document.getElementById('pq-cards');
+  if(!pend.length){el.innerHTML='<div class="no-pending">🎉 All caught up — no pending approvals</div>';return;}
+  el.innerHTML=pend.map(l=>`
+    <div class="pq-card">
+      <div class="pq-left">
+        <div class="ava" style="width:38px;height:38px;background:${avc(l.name)}20;color:${avc(l.name)};font-size:13px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:600;flex-shrink:0">${ini(l.name)}</div>
+        <div class="pq-info">
+          <div class="pq-name">${l.name} <span style="font-weight:400;color:var(--gray-400);font-size:12px">${l.empId}</span></div>
+          <div class="pq-detail">${l.type}${l.halfDay?` · ½ day (${l.halfSession}) on ${fmtD(l.from)}`:`· ${fmtD(l.from)}${l.from!==l.to?' – '+fmtD(l.to):''} · ${l.days} day${l.days>1?'s':''}`}${l.reason!=='—'?' · '+l.reason:''}</div>
+        </div>
+      </div>
+      <div class="pq-right">
+        <button class="btn-wa-apr" onclick="openModal('${l.id}','Approved')">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.554 4.12 1.522 5.851L.03 23.01a.75.75 0 00.922.968l5.334-1.46A11.95 11.95 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0z"/></svg>
+          ✓ Approve
+        </button>
+        <button class="btn-wa-rej" onclick="openModal('${l.id}','Rejected')">✗ Reject</button>
+      </div>
+    </div>`).join('');
+}
+
+// ── MODAL ──
+function buildMsg(l,action){
+  const apr=action==='Approved';
+  const dr=l.halfDay?`${l.halfSession} half day on ${fmtD(l.from)}`:l.from===l.to?fmtD(l.from):`${fmtD(l.from)} to ${fmtD(l.to)} (${l.days} days)`;
+  return apr
+    ?`✅ *Leave Approved*\n\nHi ${l.name.split(' ')[0]},\n\nYour leave request has been *approved* ✓\n\n📋 *Details:*\nType: ${l.type}\nDate: ${dr}\nRef: ${l.id}\n\nPlease ensure handover before your leave. Enjoy your time off!\n\n— Management`
+    :`❌ *Leave Not Approved*\n\nHi ${l.name.split(' ')[0]},\n\nYour leave request could *not be approved* at this time.\n\n📋 *Details:*\nType: ${l.type}\nDate: ${dr}\nRef: ${l.id}\n\nPlease speak to your manager to discuss alternative dates.\n\n— Management`;
+}
+
+function openModal(id,action){
+  const l=leaves.find(x=>x.id===id);if(!l)return;
+  mLeave=l;mAction=action;
+  document.getElementById('m-title').textContent=action==='Approved'?'✅ Approve Leave':'❌ Reject Leave';
+  document.getElementById('m-sub').textContent=`Send WhatsApp to ${l.name} (${l.phone})`;
+  document.getElementById('m-msg').textContent=buildMsg(l,action);
+  document.getElementById('wa-modal').classList.add('show');
+}
+
+function closeModal(){document.getElementById('wa-modal').classList.remove('show');mLeave=null;mAction=null;}
+
+function sendWA(){
+  if(!mLeave)return;
+  const idx=leaves.findIndex(l=>l.id===mLeave.id);
+  if(idx!==-1){leaves[idx].status=mAction;save();}
+  const phone=mLeave.phone.replace(/[^0-9]/g,'');
+  window.open(`https://wa.me/${phone}?text=${encodeURIComponent(buildMsg(mLeave,mAction))}`,'_blank');
+  closeModal();updStats();renderPQ();renderTbl();
+  toast(mAction==='Approved'?'✅ Approved & WhatsApp opened':'❌ Rejected & WhatsApp opened');
+}
+
+function renderTbl(){
+  const srch=document.getElementById('srch').value.toLowerCase();
+  const fst=document.getElementById('fl-st').value,ftp=document.getElementById('fl-tp').value;
+  const fil=leaves.filter(l=>{
+    const ms=!srch||l.name.toLowerCase().includes(srch)||l.empId.toLowerCase().includes(srch)||l.phone.includes(srch);
+    return ms&&(!fst||l.status===fst)&&(!ftp||l.type===ftp);
+  });
+  const tb=document.getElementById('l-tbody'),em=document.getElementById('empty-st');
+  if(!fil.length){tb.innerHTML='';em.style.display='block';return;}
+  em.style.display='none';
+  tb.innerHTML=fil.map(l=>`
+    <tr>
+      <td><div class="emp-cell"><div class="ava" style="background:${avc(l.name)}20;color:${avc(l.name)}">${ini(l.name)}</div><div><div class="emp-nm">${l.name}</div><div class="emp-ph">${l.phone} · ${l.dept}</div></div></div></td>
+      <td><span class="badge ${bc(l.type)}">${l.type}</span>${l.halfDay?'<span class="badge b-half">½ day</span>':''}</td>
+      <td>${fmtD(l.from)}</td>
+      <td>${l.halfDay?`<span style="font-size:12px;color:var(--gray-400)">${l.halfSession}</span>`:fmtD(l.to)}</td>
+      <td><strong>${l.halfDay?'½':l.days}</strong></td>
+      <td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--gray-600);font-size:13px">${l.reason}</td>
+      <td><span class="badge ${bc(l.status)}">${l.status==='Pending'?'⏳ ':l.status==='Approved'?'✓ ':'✗ '}${l.status}</span></td>
+      <td><div class="act-btns">
+        ${l.status!=='Approved'?`<button class="btn-apr" onclick="openModal('${l.id}','Approved')">✓</button>`:''}
+        ${l.status!=='Rejected'?`<button class="btn-rej" onclick="openModal('${l.id}','Rejected')">✗</button>`:''}
+        <button class="btn-del" onclick="delLeave('${l.id}')">🗑</button>
+      </div></td>
+    </tr>`).join('');
+  updStats();
+}
+
+function delLeave(id){leaves=leaves.filter(l=>l.id!==id);save();renderTbl();renderPQ();toast('Deleted');}
+
+// ── CALENDAR ──
+function switchView(v,btn){
+  document.querySelectorAll('.cal-tog button').forEach(b=>b.classList.remove('active'));btn.classList.add('active');
+  document.getElementById('tbl-view').style.display=v==='table'?'block':'none';
+  const cv=document.getElementById('cal-view');cv.style.display=v==='cal'?'block':'none';
+  if(v==='cal')renderCal();
+}
+function chMo(d){calMo+=d;if(calMo>11){calMo=0;calYr++;}if(calMo<0){calMo=11;calYr--;}renderCal();}
+function renderCal(){
+  const MOS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  document.getElementById('cal-lbl').textContent=MOS[calMo]+' '+calYr;
+  let h=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d=>`<div class="cal-dh">${d}</div>`).join('');
+  const first=new Date(calYr,calMo,1).getDay(),total=new Date(calYr,calMo+1,0).getDate(),tod=fmt(new Date());
+  for(let i=0;i<first;i++)h+='<div class="cal-d om"></div>';
+  for(let day=1;day<=total;day++){
+    const ds=`${calYr}-${String(calMo+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+    const on=leaves.filter(l=>l.status==='Approved'&&l.from<=ds&&l.to>=ds);
+    h+=`<div class="cal-d${ds===tod?' today':''}"><div class="cal-dn">${day}</div>${on.map(l=>`<div class="cal-ev${l.halfDay?' hd':''}">${l.name.split(' ')[0]}${l.halfDay?` (${l.halfSession?.slice(0,2)})`:''}</div>`).join('')}</div>`;
+  }
+  document.getElementById('cal-grid').innerHTML=h;
+}
+
+// ── EXPORT ──
+function exportCSV(){
+  const hdr=['ID','Name','Phone','Dept','Type','Half Day','Session','From','To','Days','Reason','Status','Submitted'];
+  const rows=leaves.map(l=>[l.id,l.name,l.phone,l.dept,l.type,l.halfDay?'Yes':'No',l.halfSession||'—',l.from,l.to,l.days,`"${l.reason}"`,l.status,l.submittedAt]);
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([[hdr,...rows].map(r=>r.join(',')).join('\n')],{type:'text/csv'}));
+  a.download='leave_report_'+fmt(new Date())+'.csv';a.click();toast('CSV exported ✓');
+}
+
+function shareLink(e){
+  e.preventDefault();
+  const url=window.location.href.split('#')[0];
+  const msg=`📋 *Leave Application Form*\n\nHi team 👋\n\nPlease use this link to apply for leave:\n${url}\n\nFill the form and submit — your manager will review and you'll get a WhatsApp notification.\n\n_No more dropping messages in the group!_ ✅`;
+  window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`,'_blank');
+}
+
+function toast(msg){const e=document.getElementById('toast');e.textContent=msg;e.classList.add('show');setTimeout(()=>e.classList.remove('show'),2500);}
+
+document.getElementById('wa-modal').addEventListener('click',function(e){if(e.target===this)closeModal();});
+updStats();
+</script>
+</body>
+</html>
