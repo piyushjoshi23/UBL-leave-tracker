@@ -130,9 +130,9 @@
   .pq-name{font-weight:600;font-size:14px;color:var(--gray-900);}
   .pq-detail{font-size:12px;color:var(--gray-400);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .pq-right{display:flex;gap:7px;align-items:center;flex-shrink:0;}
-  .btn-wa-apr{padding:8px 13px;background:#25d366;color:white;border:none;border-radius:7px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:5px;transition:background 0.15s;}
+  .btn-wa-apr{padding:8px 13px;background:#25d366;color:white;border:none;border-radius:7px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:5px;transition:background 0.15s;text-decoration:none;}
   .btn-wa-apr:hover{background:#1eba57;}
-  .btn-wa-rej{padding:8px 13px;background:var(--red-light);color:var(--red);border:none;border-radius:7px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.15s;}
+  .btn-wa-rej{padding:8px 13px;background:var(--red-light);color:var(--red);border:none;border-radius:7px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.15s;text-decoration:none;}
   .btn-wa-rej:hover{background:var(--red);color:white;}
   .no-pending{text-align:center;padding:26px;color:var(--gray-400);font-size:14px;}
 
@@ -591,7 +591,16 @@ function renderPQ(){
   document.getElementById('pq-badge').textContent=pend.length+' pending';
   const el=document.getElementById('pq-cards');
   if(!pend.length){el.innerHTML='<div class="no-pending">All caught up — no pending approvals</div>';return;}
-  el.innerHTML=pend.map(l=>`
+
+  // WhatsApp group link
+  const GROUP='https://chat.whatsapp.com/BRufSrxetLTDEO62wFSGcL';
+
+  el.innerHTML=pend.map(l=>{
+    const aprMsg=buildMsg(l,'Approved');
+    const rejMsg=buildMsg(l,'Rejected');
+    const aprUrl=GROUP+'?text='+encodeURIComponent(aprMsg);
+    const rejUrl=GROUP+'?text='+encodeURIComponent(rejMsg);
+    return `
     <div class="pq-card">
       <div class="pq-left">
         <div class="ava" style="width:38px;height:38px;background:${avc(l.name)}20;color:${avc(l.name)};font-size:13px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:600;flex-shrink:0">${ini(l.name)}</div>
@@ -601,17 +610,19 @@ function renderPQ(){
         </div>
       </div>
       <div class="pq-right">
-        <button class="btn-wa-apr" data-id="${l.id}" data-action="Approved">Approve</button>
-        <button class="btn-wa-rej" data-id="${l.id}" data-action="Rejected">Reject</button>
+        <a href="${aprUrl}" target="_blank" class="btn-wa-apr" onclick="updateStatus('${l.id}','Approved')">✓ Approve</a>
+        <a href="${rejUrl}" target="_blank" class="btn-wa-rej" onclick="updateStatus('${l.id}','Rejected')">✗ Reject</a>
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
+}
 
-  // Event delegation — attach once to parent
-  el.onclick=function(e){
-    const btn=e.target.closest('button[data-action]');
-    if(!btn)return;
-    openModal(btn.dataset.id, btn.dataset.action);
-  };
+function updateStatus(id,status){
+  const idx=leaves.findIndex(l=>l.id===id);
+  if(idx!==-1)leaves[idx].status=status;
+  setTimeout(()=>{updStats();renderPQ();renderTbl();},500);
+  apiCall({action:'updateStatus',id,status}).catch(()=>{});
+  toast(status==='Approved'?'Approved':'Rejected');
 }
 
 // ── MODAL ──
@@ -619,8 +630,8 @@ function buildMsg(l,action){
   const apr=action==='Approved';
   const dr=l.halfDay?`${l.halfSession} half day on ${fmtD(l.from)}`:l.from===l.to?fmtD(l.from):`${fmtD(l.from)} to ${fmtD(l.to)} (${l.days} days)`;
   return apr
-    ?`✅ *Leave Approved*\n\nHi ${l.name.split(' ')[0]},\n\nYour leave request has been *approved* ✓\n\n📋 *Details:*\nType: ${l.type}\nDate: ${dr}\nRef: ${l.id}\n\nPlease ensure handover before your leave. Enjoy your time off!\n\n— Management`
-    :`❌ *Leave Not Approved*\n\nHi ${l.name.split(' ')[0]},\n\nYour leave request could *not be approved* at this time.\n\n📋 *Details:*\nType: ${l.type}\nDate: ${dr}\nRef: ${l.id}\n\nPlease speak to your manager to discuss alternative dates.\n\n— Management`;
+    ?`✅ *Leave Approved*\n\n*${l.name}* has been granted leave.\n\n📋 *Details:*\nType: ${l.type}\nDate: ${dr}\nRef: ${l.id}\n\n— Management`
+    :`❌ *Leave Not Approved*\n\n*${l.name}*'s leave request has not been approved.\n\n📋 *Details:*\nType: ${l.type}\nDate: ${dr}\nRef: ${l.id}\n\nPlease coordinate with your manager.\n\n— Management`;
 }
 
 function openModal(id,action){
