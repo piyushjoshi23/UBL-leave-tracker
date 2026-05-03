@@ -626,18 +626,24 @@ function closeModal(){document.getElementById('wa-modal').classList.remove('show
 
 async function sendWA(){
   if(!mLeave)return;
-  const btn=document.getElementById('wa-send-btn');
-  btn.textContent='Saving...';btn.disabled=true;
+  const leave=mLeave, action=mAction;
+
+  // Open WhatsApp IMMEDIATELY — must happen synchronously on user tap
+  const phone=leave.phone.replace(/[^0-9]/g,'');
+  window.open(`https://wa.me/${phone}?text=${encodeURIComponent(buildMsg(leave,action))}`,'_blank');
+
+  // Update local state right away
+  const idx=leaves.findIndex(l=>l.id===leave.id);
+  if(idx!==-1)leaves[idx].status=action;
+  closeModal();updStats();renderPQ();renderTbl();
+  toast(action==='Approved'?'Approved — WhatsApp opened':'Rejected — WhatsApp opened');
+
+  // Save to Google Sheet in the background (non-blocking)
   try{
-    await apiCall({action:'updateStatus',id:mLeave.id,status:mAction});
-    const idx=leaves.findIndex(l=>l.id===mLeave.id);
-    if(idx!==-1)leaves[idx].status=mAction;
-    const phone=mLeave.phone.replace(/[^0-9]/g,'');
-    window.open(`https://wa.me/${phone}?text=${encodeURIComponent(buildMsg(mLeave,mAction))}`,'_blank');
-    closeModal();updStats();renderPQ();renderTbl();
-    toast(mAction==='Approved'?'✅ Approved & WhatsApp opened':'❌ Rejected & WhatsApp opened');
-  }catch(e){toast('Failed to update. Please try again.');}
-  btn.textContent='Open in WhatsApp';btn.disabled=false;
+    await apiCall({action:'updateStatus',id:leave.id,status:action});
+  }catch(e){
+    toast('Note: status may not have saved to sheet. Check connection.');
+  }
 }
 
 function renderTbl(){
