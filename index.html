@@ -387,7 +387,7 @@ function sheetSync(params){
 function loadFromSheet(){
   fetch(API+'?action=getAll').then(r=>r.json()).then(r=>{
     if(!r.success||!r.data||!r.data.length)return;
-    leaves=r.data.map(row=>({id:row.ID,name:row.Name,phone:row.Phone,empId:row.EmpID,dept:row.Dept,type:row.Type,halfDay:row.HalfDay==='true'||row.HalfDay===true,halfSession:row.Session||null,from:row.From,to:row.To,days:parseFloat(row.Days)||1,reason:row.Reason,status:row.Status,submittedAt:row.SubmittedAt})).filter(l=>l.id);
+    leaves=r.data.map(row=>({id:row.ID,name:row.Name,phone:row.Phone,empId:row.EmpID,dept:row.Dept,type:row.Type,halfDay:row.HalfDay==='true'||row.HalfDay===true,halfSession:row.Session||null,from:row.From,to:row.To,days:parseFloat(row.Days)||1,reason:row.Reason,status:(row.Status||'').toString().trim(),submittedAt:row.SubmittedAt})).filter(l=>l.id&&l.status);
     save();updStats();renderPQ();renderTbl();
   }).catch(()=>{});
 }
@@ -529,15 +529,20 @@ function updStats(){
 }
 
 function renderPQ(){
-  const pend=leaves.filter(l=>l.status==='Pending');
+  const pend=leaves.filter(l=>l.status&&l.status.trim()==='Pending');
   document.getElementById('pq-badge').textContent=pend.length+' pending';
   const el=document.getElementById('pq-cards');
   if(!pend.length){el.innerHTML='<div class="no-pending">🎉 All caught up — no pending approvals</div>';return;}
   el.innerHTML=pend.map(l=>{
     let phone=l.phone.replace(/[^0-9]/g,'');
     if(phone.length===10) phone='91'+phone;
-    const aprUrl='https://wa.me/'+phone+'?text='+encodeURIComponent(buildMsg(l,'Approved'));
-    const rejUrl='https://wa.me/'+phone+'?text='+encodeURIComponent(buildMsg(l,'Rejected'));
+    const msg=encodeURIComponent(buildMsg(l,'Approved'));
+    const msgR=encodeURIComponent(buildMsg(l,'Rejected'));
+    // Use whatsapp:// scheme — works inside WhatsApp browser AND normal browsers
+    const aprUrl='whatsapp://send?phone='+phone+'&text='+msg;
+    const rejUrl='whatsapp://send?phone='+phone+'&text='+msgR;
+    const aprFallback='https://wa.me/'+phone+'?text='+msg;
+    const rejFallback='https://wa.me/'+phone+'?text='+msgR;
     return `<div class="pq-card">
       <div class="pq-left">
         <div class="ava" style="width:38px;height:38px;background:${avc(l.name)}20;color:${avc(l.name)};font-size:13px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:600;flex-shrink:0">${ini(l.name)}</div>
@@ -547,17 +552,23 @@ function renderPQ(){
         </div>
       </div>
       <div class="pq-right">
-        <a href="${aprUrl}" target="_blank" class="btn-wa-apr" onclick="markStatus('${l.id}','Approved')">✓ Approve</a>
-        <a href="${rejUrl}" target="_blank" class="btn-wa-rej" onclick="markStatus('${l.id}','Rejected')">✗ Reject</a>
+        <a href="${aprUrl}" class="btn-wa-apr" onclick="tryOpen(event,'${aprFallback}','${l.id}','Approved')">✓ Approve</a>
+        <a href="${rejUrl}" class="btn-wa-rej" onclick="tryOpen(event,'${rejFallback}','${l.id}','Rejected')">✗ Reject</a>
       </div>
     </div>`;
   }).join('');
 }
 
+function tryOpen(e,fallback,id,status){
+  markStatus(id,status);
+  // Try whatsapp:// first, fall back to wa.me if it fails
+  setTimeout(()=>{ window.location.href=fallback; },300);
+}
+
 function markStatus(id,status){
   const idx=leaves.findIndex(l=>l.id===id);
   if(idx!==-1){leaves[idx].status=status;save();}
-  setTimeout(()=>{updStats();renderPQ();renderTbl();},600);
+  setTimeout(()=>{updStats();renderPQ();renderTbl();},800);
   sheetSync({action:'updateStatus',id,status});
   toast(status==='Approved'?'✅ Approved':'❌ Rejected');
 }
