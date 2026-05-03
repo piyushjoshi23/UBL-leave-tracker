@@ -30,6 +30,21 @@
   .nav-tab{padding:8px 16px;border-radius:8px;color:rgba(255,255,255,0.7);cursor:pointer;font-size:14px;font-weight:500;transition:all 0.2s;border:none;background:transparent;}
   .nav-tab.active,.nav-tab:hover{background:rgba(255,255,255,0.15);color:white;}
 
+  /* ADMIN LOCK */
+  .lock-page{max-width:420px;margin:60px auto;padding:0 16px;}
+  .lock-card{background:var(--white);border-radius:var(--radius);padding:36px 28px;box-shadow:var(--shadow-md);border:1px solid var(--gray-200);text-align:center;}
+  .lock-icon{width:64px;height:64px;background:var(--green-light);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:26px;margin:0 auto 18px;}
+  .lock-card h2{font-family:'Playfair Display',serif;font-size:22px;color:var(--gray-900);margin-bottom:8px;}
+  .lock-card p{color:var(--gray-600);font-size:14px;line-height:1.6;margin-bottom:22px;}
+  .lock-input-wrap{display:flex;align-items:center;border:1.5px solid var(--gray-200);border-radius:var(--radius-sm);overflow:hidden;background:var(--gray-50);margin-bottom:14px;transition:border-color 0.2s;}
+  .lock-input-wrap:focus-within{border-color:var(--green);background:var(--white);}
+  .lock-prefix{padding:0 12px;font-size:14px;color:var(--gray-400);border-right:1px solid var(--gray-200);height:44px;display:flex;align-items:center;background:var(--gray-100);flex-shrink:0;}
+  .lock-input{border:none;background:transparent;padding:10px 12px;font-family:'DM Sans',sans-serif;font-size:15px;color:var(--gray-800);outline:none;width:100%;letter-spacing:0.04em;}
+  .lock-btn{width:100%;padding:13px;background:var(--green);color:white;border:none;border-radius:var(--radius-sm);font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;cursor:pointer;transition:all 0.2s;}
+  .lock-btn:hover{background:var(--green-mid);}
+  .lock-error{background:var(--red-light);color:var(--red);font-size:13px;font-weight:500;padding:10px 14px;border-radius:var(--radius-sm);margin-bottom:14px;display:none;}
+  .lock-hint{font-size:12px;color:var(--gray-400);margin-top:14px;}
+
   .page{display:none;}.page.active{display:block;}
 
   /* FORM */
@@ -211,13 +226,26 @@
 <nav>
   <div class="nav-brand"><span>📋</span>LeaveDesk</div>
   <div class="nav-tabs">
-    <button class="nav-tab active" onclick="showPage('employee',this)">Apply Leave</button>
-    <button class="nav-tab" onclick="showPage('admin',this)">Admin Panel</button>
+    <button class="nav-tab active" data-page="employee" onclick="showPage('employee',this)">Apply Leave</button>
+    <button class="nav-tab" data-page="admin" onclick="showPage('admin',this)">Admin Panel</button>
   </div>
 </nav>
 
-<!-- ══ EMPLOYEE FORM ══ -->
-<div id="page-employee" class="page active">
+<!-- ══ ADMIN LOCK SCREEN ══ -->
+<div id="page-lock" class="lock-page" style="display:none">
+  <div class="lock-card">
+    <div class="lock-icon">🔒</div>
+    <h2>Admin Access</h2>
+    <p>Enter your password to access the admin panel.</p>
+    <div class="lock-error" id="lock-error">Incorrect password. Please try again.</div>
+    <div class="lock-input-wrap">
+      <input class="lock-input" type="password" id="lock-number" placeholder="" maxlength="10" onkeydown="if(event.key==='Enter')checkAdmin()" style="padding:10px 16px;" />
+    </div>
+    <button class="lock-btn" onclick="checkAdmin()">Enter Admin Panel</button>
+    <div class="lock-hint">Only authorised managers can access this panel.</div>
+  </div>
+</div>
+<div id="page-employee" style="display:block">
   <div class="form-page">
     <div class="form-hero">
       <div class="wa-badge">
@@ -304,7 +332,7 @@
 </div>
 
 <!-- ══ ADMIN ══ -->
-<div id="page-admin" class="page">
+<div id="page-admin" style="display:none">
   <div class="admin-page">
     <div class="admin-hdr">
       <div><h2>Leave Dashboard</h2><p id="a-date"></p></div>
@@ -389,6 +417,35 @@ let calMo=new Date().getMonth(),calYr=new Date().getFullYear();
 let mLeave=null,mAction=null;
 function save(){localStorage.setItem(SK,JSON.stringify(leaves));}
 
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// ADMIN AUTHORISED NUMBERS — add/remove here
+const ADMIN_NUMBERS = [
+  '8108969998',
+  '8826797888',
+];
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+const ADMIN_SESSION_KEY = 'leavedesk_admin_auth';
+function isAdminAuthed(){ return sessionStorage.getItem(ADMIN_SESSION_KEY)==='1'; }
+
+function checkAdmin(){
+  const num = document.getElementById('lock-number').value.trim().replace(/\D/g,'');
+  const err = document.getElementById('lock-error');
+  if(ADMIN_NUMBERS.includes(num)){
+    sessionStorage.setItem(ADMIN_SESSION_KEY,'1');
+    err.style.display='none';
+    document.getElementById('page-lock').style.display='none';
+    document.getElementById('page-admin').style.display='block';
+    document.querySelectorAll('.nav-tab').forEach(e=>e.classList.remove('active'));
+    document.querySelector('.nav-tab[data-page="admin"]').classList.add('active');
+    updStats();renderPQ();renderTbl();
+  } else {
+    err.style.display='block';
+    document.getElementById('lock-number').value='';
+    document.getElementById('lock-number').focus();
+  }
+}
+
 if(leaves.length===0){
   const now=new Date();
   const seed=[
@@ -410,9 +467,18 @@ function fmt(d){return d.toISOString().split('T')[0];}
 function fmtD(d){if(!d)return'—';const[,m,dy]=d.split('-');return`${parseInt(dy)} ${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][parseInt(m)-1]}`;}
 
 function showPage(p,btn){
-  document.querySelectorAll('.page').forEach(e=>e.classList.remove('active'));
+  if(p==='admin' && !isAdminAuthed()){
+    document.querySelectorAll('.page').forEach(e=>e.classList.remove('active'));
+    document.querySelectorAll('[id^=page-]').forEach(e=>e.style.display='none');
+    document.querySelectorAll('.nav-tab').forEach(e=>e.classList.remove('active'));
+    document.getElementById('page-lock').style.display='block';
+    btn.classList.add('active');
+    setTimeout(()=>document.getElementById('lock-number').focus(),100);
+    return;
+  }
+  document.querySelectorAll('[id^=page-]').forEach(e=>e.style.display='none');
   document.querySelectorAll('.nav-tab').forEach(e=>e.classList.remove('active'));
-  document.getElementById('page-'+p).classList.add('active');
+  document.getElementById('page-'+p).style.display='block';
   btn.classList.add('active');
   if(p==='admin'){updStats();renderPQ();renderTbl();}
 }
