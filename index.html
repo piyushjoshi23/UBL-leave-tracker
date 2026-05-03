@@ -197,6 +197,17 @@
   .fab-wa:hover{transform:scale(1.1);}
   .toast{position:fixed;bottom:78px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--gray-900);color:white;padding:10px 20px;border-radius:8px;font-size:14px;font-weight:500;opacity:0;transition:all 0.3s;z-index:500;pointer-events:none;white-space:nowrap;}
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  .lock-page{max-width:400px;margin:60px auto;padding:0 16px;}
+  .lock-card{background:var(--white);border-radius:var(--radius);padding:36px 28px;box-shadow:var(--shadow-md);border:1px solid var(--gray-200);text-align:center;}
+  .lock-icon{width:64px;height:64px;background:var(--green-light);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:26px;margin:0 auto 18px;}
+  .lock-card h2{font-family:'Playfair Display',serif;font-size:22px;color:var(--gray-900);margin-bottom:8px;}
+  .lock-card p{color:var(--gray-600);font-size:14px;line-height:1.6;margin-bottom:22px;}
+  .lock-input{width:100%;padding:12px 16px;border:1.5px solid var(--gray-200);border-radius:var(--radius-sm);font-family:'DM Sans',sans-serif;font-size:16px;color:var(--gray-800);background:var(--gray-50);outline:none;margin-bottom:14px;text-align:center;letter-spacing:0.1em;}
+  .lock-input:focus{border-color:var(--green);background:var(--white);}
+  .lock-btn{width:100%;padding:13px;background:var(--green);color:white;border:none;border-radius:var(--radius-sm);font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;cursor:pointer;}
+  .lock-btn:hover{background:var(--green-mid);}
+  .lock-error{background:var(--red-light);color:var(--red);font-size:13px;padding:10px 14px;border-radius:var(--radius-sm);margin-bottom:14px;display:none;}
+  .lock-hint{font-size:12px;color:var(--gray-400);margin-top:14px;}
 
   @media(max-width:600px){
     .form-row{grid-template-columns:1fr;}
@@ -211,10 +222,22 @@
 <nav>
   <div class="nav-brand"><span>📋</span>LeaveDesk</div>
   <div class="nav-tabs">
-    <button class="nav-tab active" onclick="showPage('employee',this)">Apply Leave</button>
-    <button class="nav-tab" onclick="showPage('admin',this)">Admin Panel</button>
+    <button class="nav-tab active" data-page="employee" onclick="showPage('employee',this)">Apply Leave</button>
+    <button class="nav-tab" data-page="admin" onclick="showPage('admin',this)">Admin Panel</button>
   </div>
 </nav>
+
+<div id="page-lock" class="lock-page" style="display:none">
+  <div class="lock-card">
+    <div class="lock-icon">🔒</div>
+    <h2>Admin Access</h2>
+    <p>Enter your password to access the admin panel.</p>
+    <div class="lock-error" id="lock-error">Incorrect password. Please try again.</div>
+    <input class="lock-input" type="password" id="lock-number" maxlength="10" onkeydown="if(event.key==='Enter')checkAdmin()"/>
+    <button class="lock-btn" onclick="checkAdmin()">Enter Admin Panel</button>
+    <div class="lock-hint">Only authorised managers can access this panel.</div>
+  </div>
+</div>
 
 <!-- ══ EMPLOYEE FORM ══ -->
 <div id="page-employee" class="page active">
@@ -236,7 +259,7 @@
           <div class="form-group"><label>Employee ID</label><input type="text" id="f-id" placeholder="EMP-001"/></div>
         </div>
         <div class="form-row">
-          <div class="form-group"><label>WhatsApp Number <span class="req">*</span></label><input type="tel" id="f-phone" placeholder="+91 98765 43210"/></div>
+          <div class="form-group"><label>WhatsApp Number <span class="req">*</span></label><input type="tel" id="f-phone" placeholder="+91 98765 43210" value="+91"/></div>
           <div class="form-group"><label>Department</label>
             <select id="f-dept"><option value="">Select dept.</option><option>Sales</option><option>Operations</option><option>Field Team</option><option>Finance</option><option>HR</option><option>IT</option><option>Marketing</option></select>
           </div>
@@ -384,37 +407,84 @@
 
 <script>
 const SK='leavedesk_v3';
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// GOOGLE SHEETS API — background sync only
+const API='https://script.google.com/macros/s/AKfycbxu2XsIpKHk8fGEKK9QjQidaGzUnW331rPAYMFR3eK4MQOEZEj5VI9Yw0eIyUEI8004/exec';
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+// Fire-and-forget — uses Image() trick, never blocks UI or WhatsApp
+function sheetSync(params){
+  try{ new Image().src=API+'?'+new URLSearchParams(params).toString(); }catch(e){}
+}
+
+// Load latest data from sheet into localStorage
+function loadFromSheet(){
+  fetch(API+'?action=getAll')
+    .then(r=>r.json())
+    .then(r=>{
+      if(!r.success||!r.data||!r.data.length)return;
+      leaves=r.data.map(row=>({
+        id:row.ID,name:row.Name,phone:row.Phone,
+        empId:row.EmpID,dept:row.Dept,type:row.Type,
+        halfDay:row.HalfDay==='true'||row.HalfDay===true,
+        halfSession:row.Session||null,
+        from:row.From,to:row.To,
+        days:parseFloat(row.Days)||1,
+        reason:row.Reason,status:row.Status,
+        submittedAt:row.SubmittedAt
+      })).filter(l=>l.id);
+      save();updStats();renderPQ();renderTbl();
+    }).catch(()=>{});
+}
 let leaves=JSON.parse(localStorage.getItem(SK)||'[]');
 let calMo=new Date().getMonth(),calYr=new Date().getFullYear();
 let mLeave=null,mAction=null;
 function save(){localStorage.setItem(SK,JSON.stringify(leaves));}
 
-if(leaves.length===0){
-  const now=new Date();
-  const seed=[
-    {name:'Priya Mehta',phone:'+919876511111',empId:'EMP-001',dept:'Sales',type:'Sick Leave',off:0,d:2,reason:'Fever',status:'Pending',hd:false},
-    {name:'Arjun Singh',phone:'+919876522222',empId:'EMP-002',dept:'Field Team',type:'Casual Leave',off:-3,d:1,reason:'Festival',status:'Approved',hd:false},
-    {name:'Neha Verma',phone:'+919876533333',empId:'EMP-003',dept:'Operations',type:'Personal Leave',off:1,d:0.5,reason:'Doctor visit',status:'Pending',hd:true,sess:'Morning'},
-    {name:'Ravi Kumar',phone:'+919876544444',empId:'EMP-004',dept:'Finance',type:'Emergency Leave',off:-8,d:3,reason:'Family emergency',status:'Approved',hd:false},
-    {name:'Sunita Patel',phone:'+919876555555',empId:'EMP-005',dept:'HR',type:'Casual Leave',off:-1,d:1,reason:'Personal work',status:'Rejected',hd:false},
-  ];
-  seed.forEach((s,i)=>{
-    const fr=new Date(now);fr.setDate(now.getDate()+s.off);
-    const to=new Date(fr);if(!s.hd)to.setDate(fr.getDate()+s.d-1);
-    leaves.push({id:'LV-'+String(i+1).padStart(4,'0'),name:s.name,phone:s.phone,empId:s.empId,dept:s.dept,type:s.type,from:fmt(fr),to:fmt(to),days:s.d,reason:s.reason,status:s.status,halfDay:s.hd,halfSession:s.sess||null,submittedAt:new Date(now.getTime()-(5-i)*864e5).toLocaleString('en-IN')});
-  });
-  save();
-}
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// ADMIN AUTHORISED NUMBERS
+const ADMIN_NUMBERS=['8108969998','8826797888'];
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 function fmt(d){return d.toISOString().split('T')[0];}
 function fmtD(d){if(!d)return'—';const[,m,dy]=d.split('-');return`${parseInt(dy)} ${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][parseInt(m)-1]}`;}
 
+const ADMIN_SESSION='leavedesk_admin';
+function isAdminAuthed(){return sessionStorage.getItem(ADMIN_SESSION)==='1';}
+
+function checkAdmin(){
+  const num=document.getElementById('lock-number').value.trim().replace(/\D/g,'');
+  const err=document.getElementById('lock-error');
+  if(ADMIN_NUMBERS.includes(num)){
+    sessionStorage.setItem(ADMIN_SESSION,'1');
+    err.style.display='none';
+    document.getElementById('page-lock').style.display='none';
+    document.querySelectorAll('.page').forEach(e=>e.classList.remove('active'));
+    document.getElementById('page-admin').classList.add('active');
+    document.querySelectorAll('.nav-tab').forEach(e=>e.classList.remove('active'));
+    document.querySelector('.nav-tab[data-page="admin"]').classList.add('active');
+    updStats();renderPQ();renderTbl();loadFromSheet();
+  }else{
+    err.style.display='block';
+    document.getElementById('lock-number').value='';
+  }
+}
+
 function showPage(p,btn){
+  if(p==='admin'&&!isAdminAuthed()){
+    document.querySelectorAll('.page').forEach(e=>e.classList.remove('active'));
+    document.querySelectorAll('.nav-tab').forEach(e=>e.classList.remove('active'));
+    document.getElementById('page-lock').style.display='block';
+    btn.classList.add('active');
+    setTimeout(()=>document.getElementById('lock-number').focus(),100);
+    return;
+  }
+  document.getElementById('page-lock').style.display='none';
   document.querySelectorAll('.page').forEach(e=>e.classList.remove('active'));
   document.querySelectorAll('.nav-tab').forEach(e=>e.classList.remove('active'));
   document.getElementById('page-'+p).classList.add('active');
   btn.classList.add('active');
-  if(p==='admin'){updStats();renderPQ();renderTbl();}
+  if(p==='admin'){updStats();renderPQ();renderTbl();loadFromSheet();}
 }
 
 // ── FORM ──
@@ -459,6 +529,8 @@ function submitLeave(){
   const days=isHD?0.5:(Math.ceil((new Date(to)-new Date(from))/864e5)+1);
   leaves.unshift({id,name,phone,empId:document.getElementById('f-id').value||'—',dept:document.getElementById('f-dept').value||'—',type,from,to,days,halfDay:isHD,halfSession:isHD?sess:null,reason:document.getElementById('f-reason').value||'—',status:'Pending',submittedAt:new Date().toLocaleString('en-IN')});
   save();
+  // Sync to Google Sheets in background — fire and forget
+  sheetSync({action:'add',name,phone,empId:document.getElementById('f-id').value||'—',dept:document.getElementById('f-dept').value||'—',type,halfDay:isHD,halfSession:isHD?sess:'',from,to,days,reason:document.getElementById('f-reason').value||'—'});
   document.getElementById('s-ref').textContent='REF #'+id;
   document.getElementById('form-content').style.display='none';
   document.getElementById('success-screen').style.display='block';
@@ -542,10 +614,14 @@ function sendWA(){
   if(!mLeave)return;
   const idx=leaves.findIndex(l=>l.id===mLeave.id);
   if(idx!==-1){leaves[idx].status=mAction;save();}
-  const phone=mLeave.phone.replace(/[^0-9]/g,'');
-  window.open(`https://wa.me/${phone}?text=${encodeURIComponent(buildMsg(mLeave,mAction))}`,'_blank');
+  let phone=mLeave.phone.replace(/[^0-9]/g,'');
+  if(phone.length===10) phone='91'+phone;
+  // Open WhatsApp first — exactly like v2, nothing before it
+  window.open('https://wa.me/'+phone+'?text='+encodeURIComponent(buildMsg(mLeave,mAction)),'_blank');
   closeModal();updStats();renderPQ();renderTbl();
   toast(mAction==='Approved'?'✅ Approved & WhatsApp opened':'❌ Rejected & WhatsApp opened');
+  // Sync to sheet after WhatsApp is already open
+  sheetSync({action:'updateStatus',id:mLeave.id,status:mAction});
 }
 
 function renderTbl(){
@@ -576,7 +652,11 @@ function renderTbl(){
   updStats();
 }
 
-function delLeave(id){leaves=leaves.filter(l=>l.id!==id);save();renderTbl();renderPQ();toast('Deleted');}
+function delLeave(id){
+  leaves=leaves.filter(l=>l.id!==id);
+  save();renderTbl();renderPQ();toast('Deleted');
+  sheetSync({action:'delete',id});
+}
 
 // ── CALENDAR ──
 function switchView(v,btn){
