@@ -397,6 +397,9 @@
       <div><div class="modal-t" id="m-title">Send via WhatsApp</div><div class="modal-st" id="m-sub">Preview before sending</div></div>
     </div>
     <div class="wa-preview"><div class="wa-bubble" id="m-msg"></div></div>
+    <div style="text-align:center;margin-bottom:10px;">
+      <a id="wa-direct-link" href="#" target="_blank" style="color:#25d366;font-size:13px;font-weight:600;">If button doesn't work — tap here to open WhatsApp</a>
+    </div>
     <div class="modal-acts">
       <button class="btn-modal-cls" onclick="closeModal()">Cancel</button>
       <button class="btn-wa-send" id="wa-send-btn" onclick="sendWA()">
@@ -621,6 +624,11 @@ function openModal(id,action){
   document.getElementById('m-title').textContent=action==='Approved'?'Approve Leave':'Reject Leave';
   document.getElementById('m-sub').textContent='Send WhatsApp to '+l.name+' ('+l.phone+')';
   document.getElementById('m-msg').textContent=buildMsg(l,action);
+  // Set direct fallback link
+  let phone=l.phone.replace(/[^0-9]/g,'');
+  if(phone.length===10) phone='91'+phone;
+  const waUrl='https://wa.me/'+phone+'?text='+encodeURIComponent(buildMsg(l,action));
+  document.getElementById('wa-direct-link').href=waUrl;
   document.getElementById('wa-modal').classList.add('show');
 }
 
@@ -628,22 +636,20 @@ function closeModal(){document.getElementById('wa-modal').classList.remove('show
 
 function sendWA(){
   if(!mLeave)return;
-  const leave=mLeave,action=mAction;
-  // Strip everything except digits, then ensure 91 prefix
+  const leave=mLeave, action=mAction;
+  // Fix phone — ensure 12 digit format with country code (same as v2 demo data had)
   let phone=leave.phone.replace(/[^0-9]/g,'');
-  if(phone.startsWith('91')&&phone.length===12) phone=phone;
-  else if(phone.length===10) phone='91'+phone;
-  else if(!phone.startsWith('91')) phone='91'+phone;
-  const waUrl='https://wa.me/'+phone+'?text='+encodeURIComponent(buildMsg(leave,action));
-  // Update local + close modal first
+  if(phone.length===10) phone='91'+phone;
+  // Exact same window.open as v2 — fires synchronously on button click
+  window.open('https://wa.me/'+phone+'?text='+encodeURIComponent(buildMsg(leave,action)),'_blank');
+  // Update local state
   const idx=leaves.findIndex(l=>l.id===leave.id);
   if(idx!==-1)leaves[idx].status=action;
-  closeModal();updStats();renderPQ();renderTbl();
+  closeModal();
+  updStats();renderPQ();renderTbl();
   toast(action==='Approved'?'Approved':'Rejected');
-  // Save to sheet in background
+  // Save to sheet in background — no await, purely background
   apiCall({action:'updateStatus',id:leave.id,status:action}).catch(()=>{});
-  // Open WhatsApp
-  setTimeout(()=>{ window.location.href=waUrl; },400);
 }
 
 function renderTbl(){
