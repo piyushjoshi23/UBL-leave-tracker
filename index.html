@@ -386,11 +386,26 @@ function sheetSync(params){
 }
 function loadFromSheet(){
   fetch(API+'?action=getAll').then(r=>r.json()).then(r=>{
-    if(!r.success||!r.data||!r.data.length)return;
-    leaves=r.data.map(row=>({id:row.ID,name:row.Name,phone:row.Phone,empId:row.EmpID,dept:row.Dept,type:row.Type,halfDay:row.HalfDay==='true'||row.HalfDay===true,halfSession:row.Session||null,from:row.From,to:row.To,days:parseFloat(row.Days)||1,reason:row.Reason,status:(row.Status||'').toString().trim(),submittedAt:row.SubmittedAt})).filter(l=>l.id&&l.status);
-    // Debug — show first record status
-    if(leaves.length>0) toast('Status: "'+leaves[0].status+'" Total:'+leaves.length);
-    save();updStats();renderPQ();renderTbl();
+    if(!r.success||!r.data)return;
+    if(r.data.length===0){updStats();renderPQ();renderTbl();return;}
+    leaves=r.data.map(row=>({
+      id:(row.ID||'').toString().trim(),
+      name:(row.Name||'').toString().trim(),
+      phone:(row.Phone||'').toString().trim(),
+      empId:(row.EmpID||'').toString().trim(),
+      dept:(row.Dept||'').toString().trim(),
+      type:(row.Type||'').toString().trim(),
+      halfDay:row.HalfDay==='true'||row.HalfDay===true,
+      halfSession:(row.Session||'').toString().trim()||null,
+      from:(row.From||'').toString().trim(),
+      to:(row.To||'').toString().trim(),
+      days:parseFloat(row.Days)||1,
+      reason:(row.Reason||'').toString().trim(),
+      status:(row.Status||'').toString().trim(),
+      submittedAt:(row.SubmittedAt||'').toString().trim()
+    })).filter(l=>l.id);
+    save();
+    updStats();renderPQ();renderTbl();
   }).catch(()=>{});
 }
 let leaves=JSON.parse(localStorage.getItem(SK)||'[]');
@@ -431,7 +446,9 @@ function checkAdmin(){
     document.getElementById('page-admin').classList.add('active');
     document.querySelectorAll('.nav-tab').forEach(e=>e.classList.remove('active'));
     document.querySelector('.nav-tab[data-page="admin"]').classList.add('active');
-    updStats();renderPQ();renderTbl();loadFromSheet();
+    updStats();renderPQ();renderTbl();
+    document.getElementById('pq-cards').innerHTML='<div class="no-pending" style="color:#9ca3af">Loading...</div>';
+    loadFromSheet();
   }else{err.style.display='block';document.getElementById('lock-number').value='';}
 }
 
@@ -449,7 +466,13 @@ function showPage(p,btn){
   document.querySelectorAll('.nav-tab').forEach(e=>e.classList.remove('active'));
   document.getElementById('page-'+p).classList.add('active');
   btn.classList.add('active');
-  if(p==='admin'){updStats();renderPQ();renderTbl();loadFromSheet();}
+  if(p==='admin'){
+    // Always load fresh from sheet — clear stale localStorage first
+    leaves=[];save();
+    updStats();renderPQ();renderTbl();
+    document.getElementById('pq-cards').innerHTML='<div class="no-pending" style="color:#9ca3af">Loading...</div>';
+    loadFromSheet();
+  }
 }
 
 // ── FORM ──
