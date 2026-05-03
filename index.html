@@ -615,11 +615,18 @@ function buildMsg(l,action){
 
 function openModal(id,action){
   const l=leaves.find(x=>x.id===id);if(!l)return;
-  mLeave=l;mAction=action;
-  document.getElementById('m-title').textContent=action==='Approved'?'✅ Approve Leave':'❌ Reject Leave';
-  document.getElementById('m-sub').textContent=`Send WhatsApp to ${l.name} (${l.phone})`;
-  document.getElementById('m-msg').textContent=buildMsg(l,action);
-  document.getElementById('wa-modal').classList.add('show');
+
+  // Open WhatsApp directly — no modal, no async, no popup block
+  const phone=l.phone.replace(/[^0-9]/g,'');
+  const waUrl='https://wa.me/91'+phone+'?text='+encodeURIComponent(buildMsg(l,action));
+  window.location.href=waUrl;
+
+  // Update status in background
+  const idx=leaves.findIndex(x=>x.id===id);
+  if(idx!==-1)leaves[idx].status=action;
+  updStats();renderPQ();renderTbl();
+  toast(action==='Approved'?'Approved':'Rejected');
+  apiCall({action:'updateStatus',id:l.id,status:action}).catch(()=>{});
 }
 
 function closeModal(){document.getElementById('wa-modal').classList.remove('show');mLeave=null;mAction=null;}
