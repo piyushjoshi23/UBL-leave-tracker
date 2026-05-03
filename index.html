@@ -631,18 +631,17 @@ function sendWA(){
   const leave=mLeave,action=mAction;
   const phone=leave.phone.replace(/[^0-9]/g,'');
   const fullPhone=phone.length===10?'91'+phone:phone;
-  // window.open synchronously on button click — no await before this
-  window.open('https://wa.me/'+fullPhone+'?text='+encodeURIComponent(buildMsg(leave,action)),'_blank');
-  // Update local + close modal
+  const waUrl='https://wa.me/'+fullPhone+'?text='+encodeURIComponent(buildMsg(leave,action));
+  // Update local + close modal first
   const idx=leaves.findIndex(l=>l.id===leave.id);
   if(idx!==-1)leaves[idx].status=action;
   closeModal();updStats();renderPQ();renderTbl();
   toast(action==='Approved'?'Approved':'Rejected');
   // Save to sheet in background
   apiCall({action:'updateStatus',id:leave.id,status:action}).catch(()=>{});
+  // Navigate to WhatsApp — works in all browsers including Safari
+  setTimeout(()=>{ window.location.href=waUrl; },400);
 }
-
-function onWASend(){}
 
 function renderTbl(){
   const srch=document.getElementById('srch').value.toLowerCase();
