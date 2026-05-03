@@ -388,6 +388,8 @@ function loadFromSheet(){
   fetch(API+'?action=getAll').then(r=>r.json()).then(r=>{
     if(!r.success||!r.data||!r.data.length)return;
     leaves=r.data.map(row=>({id:row.ID,name:row.Name,phone:row.Phone,empId:row.EmpID,dept:row.Dept,type:row.Type,halfDay:row.HalfDay==='true'||row.HalfDay===true,halfSession:row.Session||null,from:row.From,to:row.To,days:parseFloat(row.Days)||1,reason:row.Reason,status:(row.Status||'').toString().trim(),submittedAt:row.SubmittedAt})).filter(l=>l.id&&l.status);
+    // Debug — show first record status
+    if(leaves.length>0) toast('Status: "'+leaves[0].status+'" Total:'+leaves.length);
     save();updStats();renderPQ();renderTbl();
   }).catch(()=>{});
 }
