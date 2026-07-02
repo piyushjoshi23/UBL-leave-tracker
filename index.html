@@ -339,7 +339,10 @@
       </div>
 
       <div class="card" id="att-summary" style="display:none">
-        <div class="card-title">This Month Summary</div>
+        <div class="card-title" style="display:flex;align-items:center;justify-content:space-between;">
+          This Month Summary
+          <button onclick="refreshSummary()" style="padding:4px 10px;background:var(--green-light);color:var(--green);border:none;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;">↻ Refresh</button>
+        </div>
         <div class="att-summary-grid">
           <div class="att-sum-box" style="background:var(--green-light)">
             <div style="font-size:28px;font-weight:700;color:var(--green)" id="att-p-count">—</div>
@@ -587,23 +590,43 @@ function markAttendance(){
   document.getElementById('att-not-marked').style.display='none';
   document.getElementById('att-already').style.display='block';
   document.getElementById('att-marked-at').textContent='Marked at '+time;
-  loadMonthlySummary(empId, empName, now);
+  // Wait 3 seconds for sheet to save then load summary
+  setTimeout(()=>loadMonthlySummary(empId, empName, now), 3000);
   toast('Attendance marked for today!');
+}
+
+function refreshSummary(){
+  const val=document.getElementById('att-emp-select').value;
+  if(!val)return;
+  const [empId,empName]=val.split('|');
+  loadMonthlySummary(empId, empName, new Date());
+  toast('Refreshing...');
 }
 
 function loadMonthlySummary(empId, empName, now){
   document.getElementById('att-summary').style.display='block';
+  document.getElementById('att-p-count').textContent='...';
+  document.getElementById('att-a-count').textContent='...';
+  document.getElementById('att-w-count').textContent='...';
   fetch(API+'?action=getAttendance&empId='+encodeURIComponent(empId)+'&name='+encodeURIComponent(empName)+'&month='+(now.getMonth()+1)+'&year='+now.getFullYear())
-    .then(r=>r.json()).then(r=>{
+    .then(r=>r.json())
+    .then(r=>{
       if(r.success&&r.data){
-        document.getElementById('att-p-count').textContent=r.data.filter(d=>d.status==='P').length;
-        document.getElementById('att-a-count').textContent=r.data.filter(d=>d.status==='A').length;
-        document.getElementById('att-w-count').textContent=r.data.filter(d=>d.status==='WO-I').length;
+        const p=r.data.filter(d=>(d.status||'').toUpperCase()==='P').length;
+        const a=r.data.filter(d=>(d.status||'').toUpperCase()==='A').length;
+        const w=r.data.filter(d=>(d.status||'').toUpperCase()==='WO-I').length;
+        document.getElementById('att-p-count').textContent=p;
+        document.getElementById('att-a-count').textContent=a;
+        document.getElementById('att-w-count').textContent=w;
+      } else {
+        document.getElementById('att-p-count').textContent='0';
+        document.getElementById('att-a-count').textContent='0';
+        document.getElementById('att-w-count').textContent='0';
       }
     }).catch(()=>{
-      document.getElementById('att-p-count').textContent='—';
-      document.getElementById('att-a-count').textContent='—';
-      document.getElementById('att-w-count').textContent='—';
+      document.getElementById('att-p-count').textContent='0';
+      document.getElementById('att-a-count').textContent='0';
+      document.getElementById('att-w-count').textContent='0';
     });
 }
 
