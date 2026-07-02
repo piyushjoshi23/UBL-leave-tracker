@@ -509,11 +509,10 @@ function loadEmployeeList(){
       if(r.success&&r.data&&r.data.length){
         sel.innerHTML='<option value="">— Select your name —</option>';
         r.data.forEach(emp=>{
-          const val=emp.empId+'|'+emp.name.toUpperCase();
+          const val=emp.empId+'|'+emp.nameUpper;
           const opt=document.createElement('option');
           opt.value=val;
-          // Capitalize properly for display
-          opt.textContent=emp.name.split(' ').map(w=>w.charAt(0).toUpperCase()+w.slice(1).toLowerCase()).join(' ');
+          opt.textContent=emp.name;
           sel.appendChild(opt);
         });
         // Restore last selection
@@ -528,15 +527,16 @@ function loadEmployeeList(){
     }).catch(()=>{
       // Fallback to hardcoded list if sheet not available
       sel.innerHTML=`<option value="">— Select your name —</option>
-        <option value="UBL/001|CHANDRASHEKHAR PATHAK">Chandrashekhar Pathak</option>
-        <option value="UBL/002|BHUPENDRA UPARWAL">Bhupendra Uparwal</option>
+        <option value="UBL/001|PANKAJ JOSHI">Pankaj Joshi</option>
+        <option value="UBL/002|CHANDRASHEKHAR PATHAK">Chandrashekhar Pathak</option>
+        <option value="UBL/003|BHUPENDRA UPARWAL">Bhupendra Uparwal</option>
         <option value="UBL/004|SAKSHAM THAKUR">Saksham Thakur</option>
         <option value="UBL/005|PUNEET SINHA">Puneet Sinha</option>
-        <option value="UBL/012|PREM LEKHWAR">Prem Lekhwar</option>
-        <option value="UBL/013|AJAY MISHRA">Ajay Mishra</option>
-        <option value="UBL/014|YOGITA CHAUHAN">Yogita Chauhan</option>
-        <option value="UBL/020|KANISHKA SHUKLA">Kanishka Shukla</option>
-        <option value="UBL/021|SUMIT SEMWAL">Sumit Semwal</option>`;
+        <option value="UBL/0012|PREM LEKHWAR">Prem Lekhwar</option>
+        <option value="UBL/0013|AJAY MISHRA">Ajay Mishra</option>
+        <option value="UBL/0014|YOGITA CHAUHAN">Yogita Chauhan</option>
+        <option value="UBL/0020|KANISHKA SHUKLA">Kanishka Shukla</option>
+        <option value="UBL/0021|SUMIT SEMWAL">Sumit Semwal</option>`;
     });
 }
 
