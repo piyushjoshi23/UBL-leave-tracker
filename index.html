@@ -335,6 +335,7 @@
           <div style="font-size:40px;margin-bottom:8px">✅</div>
           <div style="font-size:16px;font-weight:700;color:var(--green);margin-bottom:4px">Attendance Marked!</div>
           <div style="font-size:13px;color:var(--gray-600)" id="att-marked-at">—</div>
+          <button onclick="resetAttendance()" style="margin-top:12px;padding:8px 18px;background:transparent;color:var(--red);border:1.5px solid var(--red);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;">↩ Undo / Reset</button>
         </div>
       </div>
 
@@ -593,6 +594,23 @@ function markAttendance(){
   // Wait 3 seconds for sheet to save then load summary
   setTimeout(()=>loadMonthlySummary(empId, empName, now), 3000);
   toast('Attendance marked for today!');
+}
+
+function resetAttendance(){
+  const val=document.getElementById('att-emp-select').value;
+  if(!val)return;
+  const [empId,empName]=val.split('|');
+  const now=new Date();
+  const todayKey=fmt(now)+'_'+empId+'_'+empName;
+  localStorage.removeItem('att_today_'+todayKey);
+  document.getElementById('att-already').style.display='none';
+  document.getElementById('att-not-marked').style.display='block';
+  document.getElementById('att-btn').textContent='✓ Mark Present for Today';
+  document.getElementById('att-btn').disabled=false;
+  // Reset count display
+  const cnt=document.getElementById('att-p-count');
+  cnt.textContent=Math.max(0,parseInt(cnt.textContent||'0')-1);
+  toast('Reset done — you can mark again');
 }
 
 function refreshSummary(){
