@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LeaveDesk</title>
+<title>UB Lifescience — Leave & Attendance</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
 <style>
   :root {
-    --green:#1a6b45;--green-light:#e8f5ee;--green-mid:#2d8a5e;--green-pale:#f0faf5;
+    --green:#1a8c8c;--green-light:#e0f4f4;--green-mid:#0d6b6b;--green-pale:#f0f9f9;
     --amber:#d97706;--amber-light:#fef3c7;
     --red:#dc2626;--red-light:#fef2f2;
     --blue:#1d4ed8;--blue-light:#dbeafe;
@@ -21,7 +21,7 @@
     --radius:12px;--radius-sm:8px;
   }
   *{box-sizing:border-box;margin:0;padding:0;}
-  body{font-family:'DM Sans',sans-serif;background:#f4f7f4;color:var(--gray-800);min-height:100vh;font-size:15px;}
+  body{font-family:'DM Sans',sans-serif;background:#f0f9f9;color:var(--gray-800);min-height:100vh;font-size:15px;}
 
   nav{background:var(--green);padding:0 16px;display:flex;align-items:center;justify-content:space-between;height:60px;position:sticky;top:0;z-index:100;box-shadow:var(--shadow-md);}
   .nav-brand{font-family:'Playfair Display',serif;color:white;font-size:18px;display:flex;align-items:center;gap:8px;}
@@ -38,7 +38,7 @@
   .form-hero::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,var(--green),var(--green-mid));}
   .form-hero h1{font-family:'Playfair Display',serif;font-size:23px;color:var(--gray-900);margin-bottom:6px;}
   .form-hero p{color:var(--gray-600);font-size:14px;line-height:1.6;}
-  .wa-badge{display:inline-flex;align-items:center;gap:5px;background:#dcf8c6;color:#1a6b2e;font-size:12px;font-weight:600;padding:3px 11px;border-radius:20px;margin-bottom:11px;}
+  .wa-badge{display:inline-flex;align-items:center;gap:5px;background:#e0f4f4;color:#0d6b6b;font-size:12px;font-weight:600;padding:3px 11px;border-radius:20px;margin-bottom:11px;}
   .card{background:var(--white);border-radius:var(--radius);padding:22px;box-shadow:var(--shadow-sm);border:1px solid var(--gray-200);margin-bottom:16px;}
   .card-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.07em;color:var(--green);margin-bottom:16px;}
   .form-row{display:grid;grid-template-columns:1fr 1fr;gap:13px;}
@@ -72,7 +72,7 @@
   .hd-opt{padding:10px;border:1.5px solid var(--gray-200);border-radius:var(--radius-sm);background:var(--white);cursor:pointer;text-align:center;font-size:13px;font-weight:500;color:var(--gray-600);transition:all 0.15s;}
   .hd-opt:hover,.hd-opt.sel{border-color:var(--blue);background:var(--blue-light);color:var(--blue);}
 
-  .dur-box{background:var(--green-pale);border:1px solid #b6dfc8;border-radius:var(--radius-sm);padding:10px 15px;display:flex;align-items:center;justify-content:space-between;margin-top:13px;}
+  .dur-box{background:var(--green-pale);border:1px solid #9ed4d4;border-radius:var(--radius-sm);padding:10px 15px;display:flex;align-items:center;justify-content:space-between;margin-top:13px;}
   .dur-box.hd{background:#eff6ff;border-color:#93c5fd;}
   .dur-box span{font-size:13px;color:var(--gray-600);}
   .dur-box strong{font-size:17px;font-weight:600;color:var(--green);}
@@ -95,7 +95,7 @@
   .att-mark-btn{width:100%;padding:20px;background:var(--green);color:white;border:none;border-radius:var(--radius);font-family:'DM Sans',sans-serif;font-size:18px;font-weight:700;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:10px;margin-top:4px;letter-spacing:0.01em;}
   .att-mark-btn:hover{background:var(--green-mid);transform:translateY(-2px);box-shadow:var(--shadow-md);}
   .att-mark-btn:disabled{background:var(--gray-200);color:var(--gray-400);transform:none;cursor:default;}
-  .att-success-box{background:var(--green-light);border:1px solid #b6dfc8;border-radius:var(--radius);padding:24px;text-align:center;display:none;}
+  .att-success-box{background:var(--green-light);border:1px solid #9ed4d4;border-radius:var(--radius);padding:24px;text-align:center;display:none;}
   .att-summary-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
   .att-sum-box{text-align:center;padding:14px 10px;border-radius:var(--radius-sm);}
 
@@ -187,13 +187,15 @@
 <body>
 
 <nav>
-  <div class="nav-brand"><span>📋</span>LeaveDesk</div>
+  <div class="nav-brand">
+    <span style="background:rgba(255,255,255,0.2);color:white;font-size:11px;font-weight:600;letter-spacing:0.02em">UB</span>
+    UB Lifescience
+  </div>
   <div class="nav-tabs">
     <button class="nav-tab active" data-page="employee" onclick="showPage('employee',this)">Leave</button>
     <button class="nav-tab" data-page="attendance" onclick="showPage('attendance',this)">Attendance</button>
-    <button class="nav-tab" id="admin-tab" data-page="admin" onclick="showPage('admin',this)" style="display:none">Admin</button>
+    <button class="nav-tab" id="admin-tab" data-page="admin" onclick="showPage('admin',this)">Admin</button>
   </div>
-  <div onclick="adminTap()" style="width:40px;height:60px;cursor:pointer;position:absolute;right:0;top:0;opacity:0;"></div>
 </nav>
 
 <div id="page-lock" style="display:none;max-width:400px;margin:60px auto;padding:0 16px;">
@@ -212,12 +214,13 @@
 <div id="page-employee" class="page active">
   <div class="form-page">
     <div class="form-hero">
-      <div class="wa-badge">
+      <div class="wa-badge" style="background:#e0f4f4;color:#0d6b6b">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.554 4.12 1.522 5.851L.03 23.01a.75.75 0 00.922.968l5.334-1.46A11.95 11.95 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.75a9.74 9.74 0 01-5.023-1.394l-.36-.213-3.728 1.02 1.053-3.63-.234-.374A9.718 9.718 0 012.25 12C2.25 6.615 6.615 2.25 12 2.25S21.75 6.615 21.75 12 17.385 21.75 12 21.75z"/></svg>
         WhatsApp linked
       </div>
       <h1>Apply for Leave</h1>
       <p>Submit your request — your manager will approve and you'll be notified on WhatsApp.</p>
+      <div style="font-size:11px;color:#9ca3af;margin-top:6px;letter-spacing:0.03em">UB LIFESCIENCE · PIONEERING HEALTH SOLUTIONS</div>
     </div>
     <div id="form-content">
       <div class="card">
@@ -367,7 +370,7 @@
 <div id="page-admin" class="page">
   <div class="admin-page">
     <div class="admin-hdr">
-      <div><h2>Leave Dashboard</h2><p id="a-date"></p></div>
+      <div><h2>Leave Dashboard</h2><p id="a-date"></p><p style="font-size:11px;color:#9ca3af;letter-spacing:0.03em;margin-top:2px">UB LIFESCIENCE</p></div>
       <div class="cal-tog">
         <button class="active" onclick="switchView('table',this)">📋 List</button>
         <button onclick="switchView('cal',this)">📅 Calendar</button>
@@ -466,11 +469,6 @@ function checkAdmin(){
   }else{err.style.display='block';document.getElementById('lock-number').value='';}
 }
 
-let tapCount=0,tapTimer=null;
-function adminTap(){
-  tapCount++;clearTimeout(tapTimer);tapTimer=setTimeout(()=>tapCount=0,2000);
-  if(tapCount>=5){tapCount=0;document.getElementById('admin-tab').style.display='block';document.getElementById('admin-tab').click();}
-}
 
 function showPage(p,btn){
   if(p==='admin'&&!isAdminAuthed()){
@@ -490,7 +488,6 @@ function showPage(p,btn){
   if(p==='attendance') initAttPage();
 }
 
-if(isAdminAuthed()) document.getElementById('admin-tab').style.display='block';
 
 // ── ATTENDANCE ──
 function initAttPage(){
